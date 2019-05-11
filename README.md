@@ -70,7 +70,7 @@ optional arguments:
 5. Create a new Pull Request
 
 ## Licence
-MIT, see ``licence.txt``
+MIT, see ``LICENSE``
 
 <!-- Markdown link & img dfn's -->
 [wiki]: https://github.com/iddocohen/vcoclient/wiki
