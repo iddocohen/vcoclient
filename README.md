@@ -69,5 +69,8 @@ optional arguments:
 4. Push to the branch (`git push origin feature/fooBar`)
 5. Create a new Pull Request
 
+## Licence
+MIT, see ``licence.txt``
+
 <!-- Markdown link & img dfn's -->
 [wiki]: https://github.com/iddocohen/vcoclient/wiki
