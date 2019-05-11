@@ -17,9 +17,40 @@ It uses argparse and functional hooks, to execute those. Each functional hook, h
 
 ## Installation
 
-## Help
+## Useage
+### Global Options
+```sh
+usage: vcoclient.py [-h] --vco HOSTNAME [--output {pandas,json}]
+                    {login,logout,edges_get,sysprop_set} ...
 
-## Useage Example
+A simple VeloCloud Orchestrator (VCO) client via Python
+
+positional arguments:
+  {login,logout,edges_get,sysprop_set}
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --vco HOSTNAME        Hostname/IP of VCO
+  --output {pandas,json}
+                        Pandas tables are used as default output method but
+                        one can also use 'json'
+```
+
+### Login 
+```sh
+usage: vcoclient.py login [-h] --username USERNAME [--password PASSWORD]
+                          [--operator]
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --username USERNAME  Username for Authentication
+  --password PASSWORD  Password for Authentication
+  --operator           Per default we login as operator to VCO. If not, one
+                       can set this to false.
+```
+### Logout
+### Get Edges
+### Set System Properties
 
 ## Release History
 
