@@ -225,11 +225,12 @@ if __name__ == "__main__":
     Based on the arguements provided, it will execute a given function
     """
     parser = argparse.ArgumentParser(description="A simple VeloCloud Orchestrator (VCO) client via Python")
-    parser.add_argument("--vco", action="store", type=str, dest="hostname",
+    parser.add_argument("--vco", action="store", type=str, dest="hostname", required=True,
                         help="Hostname/IP of VCO")
     parser.add_argument("--output", action="store", type=str, dest="output", default="pandas", choices=["pandas", "json"],
                         help="Pandas tables are used as default output method but one can also use 'json'")
 
+    
     subparsers = parser.add_subparsers()
 
     # Login function
@@ -259,7 +260,6 @@ if __name__ == "__main__":
     parser_getedges.set_defaults(func=edges_get)
 
     # Update/insert system properties in VCO
-
     parser_sysprop_set = subparsers.add_parser("sysprop_set")
     
     parser_sysprop_set.add_argument("--name", action="store", type=str, dest="name", required=True, 
@@ -269,9 +269,7 @@ if __name__ == "__main__":
                               help="New value of the system property")
     
     parser_sysprop_set.set_defaults(func=sysprop_set)
-
-
-
+    
     args = parser.parse_args()
     args.func(args)
 
