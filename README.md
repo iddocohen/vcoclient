@@ -79,7 +79,9 @@ Or in JSON
 
 One needs to authenticate himself/herself via username and password to VCO. A user can be type "operator" or "enterprise" and hence has different rights in VCO.
 
-*Please note:* Session cookie is getting created as soon as this method gets called. The session cookie gets saved under ``/tmp/<hostname>.txt``, and used later by new method calls (so one does not need to use the login method everytime). As the cookie has no expire date and VCO holds the time on the expiry of the session, it is recommended *to execute login every so often* to ensure nothing gets broken over time.  
+**Please note:** Session cookie is getting created as soon as this method gets called. The session cookie gets saved under ``/tmp/<hostname>.txt``, and used later by new method calls (so one does not need to use the login method everytime). As the cookie has no expire date and VCO holds the time on the expiry of the session, it is recommended **to execute login method every so often** to ensure nothing gets broken over time. 
+
+Maybe to-do for the future, to store session time and check accordingly. 
 
 ```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py login --help
