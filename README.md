@@ -2,7 +2,7 @@
 
 A simple VeloCloud Orchestrator (VCO) Python client
 
-The idea is to embrace the linux methodology and to have one VCO client, to create complex workflows with existing linux shell programs.
+The idea is to embrace the linux methodology and to have one VCO client that can be used within a complex workflow under Linux.
 
 ```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 logout
@@ -21,9 +21,15 @@ created                                 2019-04-19T15:48:50.000Z                
 ...                                     ...                                       ...                                       ...                                       ...
 ```
 
-It uses argparse and it is functional hooks. Each functional hook, is a mini workflow by itself. 
+It uses argparse and it is functional hooks. Each functional hook, is a mini method to accomplish something. 
+
+## Supported
+
+On Mac OS and Linux
 
 ## Installation
+
+TODO
 
 ## Useage
 ### Global Program Options
@@ -176,7 +182,31 @@ created                                 2019-04-19T15:48:50.000Z                
 ...                                     ...                                       ...
 ```
 
-### Set System Properties
+### Set System Properties - Method
+
+System properties of VCO can be changed/added. Only applicable at "operator" mode but needed for on-premiss installation of VCO.
+
+**Please Note**: Some system properties can break VCO and use this method carefully.
+
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py sysprop_set --help
+usage: vcoclient.py sysprop_set [-h] --name NAME --value VALUE
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --name NAME    Name of the new/edit system property
+  --value VALUE  New value of the system property
+
+```
+
+#### Example
+
+Enable google API for VCO:
+
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py sysprop_set --name=service.client.googleMapsApi.enable --value=true
+True
+```
 
 ## Release History
 
