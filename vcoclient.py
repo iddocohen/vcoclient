@@ -217,8 +217,8 @@ if __name__ == "__main__":
     parser_login.add_argument("--password", action="store", type=str, dest="password", default="",
                               help="Password for Authentication")
     
-    parser_login.add_argument("--operator", action="store_true", dest="operator", default=True,
-                              help="Per default we login as operator to VCO. If not, one can set this to false.")
+    parser_login.add_argument("--no-operator", action="store_false", dest="operator", default=True,
+                              help="Per default we login as operator to VCO. If not, use this flag")
 
     parser_login.set_defaults(func=login)
     
