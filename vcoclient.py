@@ -164,7 +164,7 @@ def edges_get (args):
     j = json.loads(json.dumps(o))
     df = pd.DataFrame.from_dict(json_normalize(j), orient='columns')
     out = None
-    if "search" in args:
+    if args.search:
       out = df[df['name'].str.contains(args.search)].T
     else:
       out = df.T
