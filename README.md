@@ -106,7 +106,7 @@ optional arguments:
 True
 ```
 
-### Logout
+### Logout - Method
 
 The logout method logsout from VCO itself and deletes the session cookie stored under ``/tmp/<hostname>.txt``.
 
@@ -119,7 +119,63 @@ It is best practice to use it after done using different methods with vcoclient.
 True
 ```
 
-### Get Edges
+### Get Edges - Method
+
+To get a list of all or filtered VeloCloud Edges (VCEs) from VCO. 
+
+```sh
+usage: vcoclient.py edges_get [-h] [--search SEARCH]
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --search SEARCH  Search Edge/Edges containing the given name
+```
+
+#### Example
+
+To get all, one does not need to ``--search`` parameter
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get
+                                                               0                                         1                                         2                                         3
+activationKey                                HS7S-QKPA-ZZCC-PG74                       LHH3-8B4R-7XVJ-6J3V                       JTWH-EHNW-7LUG-YQ9T                       YZ8U-CKTY-8MTL-FP4R
+activationKeyExpires                    2019-05-28T11:53:33.000Z                  2019-05-19T16:58:53.000Z                  2019-06-01T10:32:39.000Z                  2019-06-01T16:10:54.000Z
+activationState                                        ACTIVATED                                 ACTIVATED                                 ACTIVATED                                 ACTIVATED
+activationTime                          2019-04-28T11:55:38.000Z                  2019-04-19T17:17:51.000Z                  2019-05-02T10:55:10.000Z                  2019-05-02T19:18:20.000Z
+alertsEnabled                                                  1                                         1                                         1                                         1
+buildNumber                                     R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA
+created                                 2019-04-19T15:48:50.000Z                  2019-04-19T16:58:53.000Z                  2019-05-02T10:32:39.000Z                  2019-05-02T16:10:54.000Z
+...                                     ...                                       ...                                       ...                                       ...
+```
+but one can also search for one:
+
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --search=Branch1
+                                                               0
+activationKey                                HS7S-QKPA-ZZCC-PG74
+activationKeyExpires                    2019-05-28T11:53:33.000Z
+activationState                                        ACTIVATED
+activationTime                          2019-04-28T11:55:38.000Z
+alertsEnabled                                                  1
+buildNumber                                     R322-20190212-GA
+created                                 2019-04-19T15:48:50.000Z
+...                                     ...
+```
+
+or even more then one: 
+
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --search=Branch1\|Branch-2
+                                                               0                                         1
+activationKey                                HS7S-QKPA-ZZCC-PG74                       LHH3-8B4R-7XVJ-6J3V
+activationKeyExpires                    2019-05-28T11:53:33.000Z                  2019-05-19T16:58:53.000Z
+activationState                                        ACTIVATED                                 ACTIVATED
+activationTime                          2019-04-28T11:55:38.000Z                  2019-04-19T17:17:51.000Z
+alertsEnabled                                                  1                                         1
+buildNumber                                     R322-20190212-GA                          R322-20190212-GA
+created                                 2019-04-19T15:48:50.000Z                  2019-04-19T16:58:53.000Z
+...                                     ...                                       ...
+```
+
 ### Set System Properties
 
 ## Release History
