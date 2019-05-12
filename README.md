@@ -210,12 +210,17 @@ True
 
 ## Release History
 
+* 0.0.2
+    * Added README, Licences, and fixes bugs in vcoclient.py
 * 0.0.1
     * First versions
 
 ## Future improvements
 
-* Finishing the TODOs in Python Client 
+* Finishing the TODOs in client
+* Add more useful functions:
+    * Partner gateway provisioning method
+    * Edge provisioning method
 
 ## Contributing
 
