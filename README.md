@@ -2,23 +2,31 @@
 
 A simple VeloCloud Orchestrator (VCO) Python client
 
-The idea, with simple shell and with this simple client, create complex workflows with VCO.
-The client uses barebone VCO API and python libaries to be slim as possible.
+The idea is to embrace the linux methodology and to have one VCO client, to create complex workflows with existing linux shell programs.
 
-It uses argparse and functional hooks, to execute those. Each functional hook, has its help and one can use those to understand what is supported with client.
-
-## How the synergy might work:
 ```sh
-  ./vcoclient.py --vco=192.168.2.55 logout
-  ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password=VeloCloud123
-  ./vcoclient.py --vco=192.168.2.55 edges_get --search=VCE-Branch-1
-  ./vcoclient.py --vco=192.168.2.55 edges_get
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 logout
+True
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password=VeloCloud123
+True
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get
+                                                               0                                         1                                         2                                         3
+activationKey                                HS7S-QKPA-ZZCC-PG74                       LHH3-8B4R-7XVJ-6J3V                       JTWH-EHNW-7LUG-YQ9T                       YZ8U-CKTY-8MTL-FP4R
+activationKeyExpires                    2019-05-28T11:53:33.000Z                  2019-05-19T16:58:53.000Z                  2019-06-01T10:32:39.000Z                  2019-06-01T16:10:54.000Z
+activationState                                        ACTIVATED                                 ACTIVATED                                 ACTIVATED                                 ACTIVATED
+activationTime                          2019-04-28T11:55:38.000Z                  2019-04-19T17:17:51.000Z                  2019-05-02T10:55:10.000Z                  2019-05-02T19:18:20.000Z
+alertsEnabled                                                  1                                         1                                         1                                         1
+buildNumber                                     R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA
+created                                 2019-04-19T15:48:50.000Z                  2019-04-19T16:58:53.000Z                  2019-05-02T10:32:39.000Z                  2019-05-02T16:10:54.000Z
+...                                     ...                                       ...                                       ...                                       ...
 ```
+
+It uses argparse and it is functional hooks. Each functional hook, is a mini workflow by itself. 
 
 ## Installation
 
 ## Useage
-### Global Options
+### Global Program Options
 ```sh
 usage: vcoclient.py [-h] --vco HOSTNAME [--output {pandas,json}]
                     {login,logout,edges_get,sysprop_set} ...
@@ -34,6 +42,35 @@ optional arguments:
   --output {pandas,json}
                         Pandas tables are used as default output method but
                         one can also use 'json'
+```
+#### Example
+Output shall be in Pandas format
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 --output=pandas edges_get --search=Branch1
+activationKey                                HS7S-QKPA-ZZCC-PG74
+activationKeyExpires                    2019-05-28T11:53:33.000Z
+activationState                                        ACTIVATED
+activationTime                          2019-04-28T11:55:38.000Z
+...
+```
+Or in JSON
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 --output=json edges_get --search=Branch1 | python -m json.tool
+{
+    "activationKey": {
+        "0": "HS7S-QKPA-ZZCC-PG74"
+    },
+    "activationKeyExpires": {
+        "0": "2019-05-28T11:53:33.000Z"
+    },
+    "activationState": {
+        "0": "ACTIVATED"
+    },
+    "activationTime": {
+        "0": "2019-04-28T11:55:38.000Z"
+    },
+....
+
 ```
 
 ### Login 
