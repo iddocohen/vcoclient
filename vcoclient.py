@@ -1,28 +1,4 @@
-#!/usr/bin/env python
-
-#
-# vcoclient.py
-#
-# A simple VeloCloud Orchestrator (VCO) Python client
-# 
-# The idea, with simple shell and with this simple client, create complex workflows with VCO.
-# The client uses barebone VCO API and python libaries to be slim as possible.
-#
-# It uses argparse and functional hooks, to execute those. Each functional hook, has its help and one can use those to understand what is supported with client.
-#
-# Example:
-#  1) How synergy works:
-#
-#  ```
-#  ./vcoclient.py --vco=192.168.2.55 logout
-#  ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password=VeloCloud123
-#  ./vcoclient.py --vco=192.168.2.55 edges_get --search=VCE-Branch-1
-#  ./vcoclient.py --vco=192.168.2.55 edges_get
-#  ```
-#
-
-# For future Python 3 compatibility
-from __future__ import print_function
+#!/usr/bin/env python3
 
 # Needed libaries
 # TODO: Think about remove pandas
