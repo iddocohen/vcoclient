@@ -27,7 +27,9 @@ It uses argparse and it is functional hooks. Each functional hook, is a mini wor
 
 ## Useage
 ### Global Program Options
+
 ```sh
+[iddoc@homeserver:/scripts] vcoclient.py --help
 usage: vcoclient.py [-h] --vco HOSTNAME [--output {pandas,json}]
                     {login,logout,edges_get,sysprop_set} ...
 
@@ -73,18 +75,31 @@ Or in JSON
 
 ```
 
-### Login 
+### Login - Method 
+
+One needs to authenticate himself/herself via username and password to VCO. A user can be type "operator" or "enterprise" and hence has different rights in VCO.
+
+*Please note:* Session cookie is getting created as soon as this method gets called. The session cookie gets saved under ``/tmp/<hostname>.txt``, and used later by new method calls (so one does not need to use the login method everytime). As the cookie has no expire date and VCO holds the time on the expiry of the session, it is recommended *to execute login every so often* to ensure nothing gets broken over time.  
+
 ```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py login --help
 usage: vcoclient.py login [-h] --username USERNAME [--password PASSWORD]
-                          [--operator]
+                          [--no-operator]
 
 optional arguments:
   -h, --help           show this help message and exit
   --username USERNAME  Username for Authentication
   --password PASSWORD  Password for Authentication
-  --operator           Per default we login as operator to VCO. If not, one
-                       can set this to false.
+  --no-operator        Per default we login as operator to VCO. If not, use
+                       this flag
 ```
+#### Example
+
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password=VeloCloud123
+True
+```
+
 ### Logout
 ### Get Edges
 ### Set System Properties
