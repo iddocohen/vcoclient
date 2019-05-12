@@ -46,7 +46,9 @@ optional arguments:
                         one can also use 'json'
 ```
 #### Example
-Output shall be in Pandas format
+
+Output to Shell with Pandas format
+
 ```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 --output=pandas edges_get --search=Branch1
 activationKey                                HS7S-QKPA-ZZCC-PG74
@@ -55,7 +57,9 @@ activationState                                        ACTIVATED
 activationTime                          2019-04-28T11:55:38.000Z
 ...
 ```
+
 Or in JSON
+
 ```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 --output=json edges_get --search=Branch1 | python -m json.tool
 {
@@ -103,6 +107,18 @@ True
 ```
 
 ### Logout
+
+The logout method logsout from VCO itself and deletes the session cookie stored under ``/tmp/<hostname>.txt``.
+
+It is best practice to use it after done using different methods with vcoclient.py
+
+#### Example
+
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 logout
+True
+```
+
 ### Get Edges
 ### Set System Properties
 
