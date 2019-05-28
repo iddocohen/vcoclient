@@ -160,7 +160,7 @@ def edges_get (args):
     Gets edges from VCO.  
     """
     client = VcoRequestManager(args.hostname)
-    o = client.call_api("enterprise/getEnterpriseEdges", { "enterpriseId": 1 })
+    o = client.call_api("enterprise/getEnterpriseEdges", { "with":["certificates","configuration","links","recentLinks","site"], "enterpriseId": 1 })
     j = json.loads(json.dumps(o))
     df = pd.DataFrame.from_dict(json_normalize(j), orient='columns')
     out = None
@@ -172,6 +172,8 @@ def edges_get (args):
     # TODO: Lets not convert it twice in a case JSON is chosen as default output
     if args.output == "json":
       out = out.T.to_json()
+    elif args.output == "csv":
+      out = out.T.to_csv()
 
     print(out)
 
@@ -203,8 +205,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="A simple VeloCloud Orchestrator (VCO) client via Python")
     parser.add_argument("--vco", action="store", type=str, dest="hostname", required=True,
                         help="Hostname/IP of VCO")
-    parser.add_argument("--output", action="store", type=str, dest="output", default="pandas", choices=["pandas", "json"],
-                        help="Pandas tables are used as default output method but one can also use 'json'")
+    parser.add_argument("--output", action="store", type=str, dest="output", default="pandas", choices=["pandas", "json", "csv"],
+                        help="Pandas tables are used as default output method but one can also use 'json' or 'csv'")
 
     
     subparsers = parser.add_subparsers()
