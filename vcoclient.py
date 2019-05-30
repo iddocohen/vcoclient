@@ -141,6 +141,35 @@ class VcoRequestManager(object):
         except:
            raise ApiException("Cannot delete cookie file")
 
+def format_print(j, name=None, parameter=None, output=None, **args):
+    df  = pd.DataFrame.from_dict(json_normalize(j), orient='columns')
+    out = df
+    
+    # TODO: Removing the shalow rename warning received by Pandas. Need to investigate why I get such a warning.
+    pd.options.mode.chained_assignment = None
+    
+    out.rename(index=out.name.to_dict(), inplace=True)
+    
+    if name:
+      out = df[df['name'].str.contains(name)]
+
+    if parameter:
+      out = out[out.columns[out.columns.str.match(parameter)]]
+
+    out = out.T
+
+    # TODO: Lets not convert it twice in a case JSON is chosen as default output
+    if output == "json":
+      out = out.T.to_json()
+    elif output == "csv":
+      out = out.T.to_csv()
+    
+
+    pd.options.mode.chained_assignment = 'warn'
+
+    return out
+
+
 def logout(args):
     """
     Logout from VCO
@@ -157,7 +186,16 @@ def login (args):
     client = VcoRequestManager(args.hostname)
     o = client.authenticate(args.username, args.password, is_operator=args.operator)
     print (o)
-        
+
+def customers_get (args):
+    """
+    Gets customers from VCO.
+    """
+    client = VcoRequestManager(args.hostname)
+    o = client.call_api("enterprise/getEnterprise", { "with":["enterpriseProxy"], "id": 1})
+    j = json.loads(json.dumps(o))
+    
+   
 def edges_get (args):  
     """
     Gets edges from VCO.  
@@ -165,27 +203,10 @@ def edges_get (args):
     client = VcoRequestManager(args.hostname)
     o = client.call_api("enterprise/getEnterpriseEdges", { "with":["certificates","configuration","links","recentLinks","site"], "enterpriseId": args.id })
     j = json.loads(json.dumps(o))
-    df = pd.DataFrame.from_dict(json_normalize(j), orient='columns')
-    # TODO: Removing the shalow rename warning received by Pandas. Need to investigate why I get such a warning.
-    pd.options.mode.chained_assignment = None
-    out = df
-    out.rename(index=out.name.to_dict(), inplace=True)
-    if args.name:
-      out = df[df['name'].str.contains(args.name)]
 
-    if args.parameter:
-      out = out[out.columns[out.columns.str.match(args.parameter)]]
-
-    out = out.T
-
-    # TODO: Lets not convert it twice in a case JSON is chosen as default output
-    if args.output == "json":
-      out = out.T.to_json()
-    elif args.output == "csv":
-      out = out.T.to_csv()
+    out = format_print(j, **vars(args)) 
 
     print(out)
-    pd.options.mode.chained_assignment = 'warn'
 
 def sysprop_set (args):
     """
