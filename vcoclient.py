@@ -166,15 +166,15 @@ def edges_get (args):
     o = client.call_api("enterprise/getEnterpriseEdges", { "with":["certificates","configuration","links","recentLinks","site"], "enterpriseId": args.id })
     j = json.loads(json.dumps(o))
     df = pd.DataFrame.from_dict(json_normalize(j), orient='columns')
-    out = df
     pd.options.mode.chained_assignment = None
+    out = df
+    out.rename(index=out.name.to_dict(), inplace=True)
     if args.name:
       out = df[df['name'].str.contains(args.name)]
 
     if args.parameter:
       out = out[out.columns[out.columns.str.match(args.parameter)]]
 
-    out.rename(index=out.name.to_dict(), inplace=True)
     out = out.T
 
     # Wow how complicated the above is much easier, indeed uses a bit more memory...
