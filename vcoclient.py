@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # Needed libaries
-# TODO: Think about remove pandas
 import requests, pickle, json, re, argparse, os
 import pandas as pd
 from pandas.io.json import json_normalize
@@ -10,6 +9,10 @@ from pandas.io.json import json_normalize
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 VERIFY_SSL=False
+
+# TODO: Might want to have some logic to increase rows/columns
+#pd.set_option('display.max_columns', 100)
+#pd.set_option('display.max_rows', 100)
 
 class ApiException(Exception):
     pass
@@ -160,14 +163,33 @@ def edges_get (args):
     Gets edges from VCO.  
     """
     client = VcoRequestManager(args.hostname)
-    o = client.call_api("enterprise/getEnterpriseEdges", { "with":["certificates","configuration","links","recentLinks","site"], "enterpriseId": 1 })
+    o = client.call_api("enterprise/getEnterpriseEdges", { "with":["certificates","configuration","links","recentLinks","site"], "enterpriseId": args.id })
     j = json.loads(json.dumps(o))
     df = pd.DataFrame.from_dict(json_normalize(j), orient='columns')
-    out = None
-    if args.search:
-      out = df[df['name'].str.contains(args.search)].T
+    out = df
+    pd.options.mode.chained_assignment = None
+    if args.name:
+      out = df[df['name'].str.contains(args.name)]
+
+    if args.parameter:
+      out = out[out.columns[out.columns.str.match(args.parameter)]]
+
+    out.rename(index=out.name.to_dict(), inplace=True)
+    out = out.T
+
+    # Wow how complicated the above is much easier, indeed uses a bit more memory...
+    '''
+    out = None 
+    if args.name and args.parameter:
+      out = df[df['name'].str.contains(args.name)]
+      out = out[out.columns[out.columns.str.match(args.parameter)]].T
+    elif args.name and not args.parameter:
+      out = df[df['name'].str.contains(args.name)].T
+    elif not args.name and args.parameter:
+      out = df[df.columns[df.columns.str.match(args.parameter)]].T
     else:
       out = df.T
+    '''
 
     # TODO: Lets not convert it twice in a case JSON is chosen as default output
     if args.output == "json":
@@ -176,6 +198,7 @@ def edges_get (args):
       out = out.T.to_csv()
 
     print(out)
+    pd.options.mode.chained_assignment = 'warn'
 
 def sysprop_set (args):
     """
@@ -232,9 +255,15 @@ if __name__ == "__main__":
     # Get all Edges from Operator View
     parser_getedges = subparsers.add_parser("edges_get")
     
-    parser_getedges.add_argument("--search", action="store", type=str, dest="search", 
+    parser_getedges.add_argument("--name", action="store", type=str, dest="name", 
                               help="Search Edge/Edges containing the given name")
     
+    parser_getedges.add_argument("--parameter", action="store", type=str, dest="parameter",
+                              help="Returns only given parameters out of the returned value. Default all values are returned")
+    
+    parser_getedges.add_argument("--id", action="store", type=int, dest="id", default=1,
+                              help="Returns the Edges of only that given enterprise. Default all Edges of all enterprises at operator view or all Edges of an enterprise at customer view are returned.")
+
     parser_getedges.set_defaults(func=edges_get)
 
     # Update/insert system properties in VCO
