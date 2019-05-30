@@ -158,9 +158,8 @@ def format_print(j, name=None, parameter=None, output=None, **args):
 
     out = out.T
 
-    # TODO: Lets not convert it twice in a case JSON is chosen as default output
     if output == "json":
-      out = out.T.to_json()
+      out = out.to_json()
     elif output == "csv":
       out = out.T.to_csv()
     
