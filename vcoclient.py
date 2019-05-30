@@ -192,7 +192,7 @@ def customers_get (args):
     Gets customers from VCO.
     """
     client = VcoRequestManager(args.hostname)
-    o = client.call_api("enterprise/getEnterprise", { "with":["enterpriseProxy"], "id": 1})
+    o = client.call_api("network/getNetworkEnterprises", { "with":["edgeCount", "edgeConfigUpdate"], "networkId": 1})
     j = json.loads(json.dumps(o))
 
     out = format_print(j, **vars(args))
