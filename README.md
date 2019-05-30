@@ -139,16 +139,25 @@ True
 To get a list of all or filtered VeloCloud Edges (VCEs) from VCO. 
 
 ```sh
-usage: vcoclient.py edges_get [-h] [--search SEARCH]
+
+usage: vcoclient.py edges_get [-h] [--name NAME] [--parameter PARAMETER]
+                              [--id ID]
 
 optional arguments:
-  -h, --help       show this help message and exit
-  --search SEARCH  Search Edge/Edges containing the given name
+  -h, --help            show this help message and exit
+  --name NAME           Search Edge/Edges containing the given name
+  --parameter PARAMETER
+                        Returns only given parameters out of the returned
+                        value. Default all values are returned
+  --id ID               Returns the Edges of only that given enterprise.
+                        Default all Edges of all enterprises at operator view
+                        or all Edges of an enterprise at customer view are
+                        returned.
 ```
 
 #### Example
 
-To get all, one does not need to ``--search`` parameter
+To get all, one does not need to ``--name``
 ```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get
                                                                0                                         1                                         2                                         3
@@ -164,7 +173,7 @@ created                                 2019-04-19T15:48:50.000Z                
 but one can also search for one:
 
 ```sh
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --search=Branch1
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --name=Branch1
                                                                0
 activationKey                                HS7S-QKPA-ZZCC-PG74
 activationKeyExpires                    2019-05-28T11:53:33.000Z
@@ -179,7 +188,7 @@ created                                 2019-04-19T15:48:50.000Z
 or even more then one: 
 
 ```sh
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --search=Branch1\|Branch-2
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --name=Branch1\|Branch-2
                                                                0                                         1
 activationKey                                HS7S-QKPA-ZZCC-PG74                       LHH3-8B4R-7XVJ-6J3V
 activationKeyExpires                    2019-05-28T11:53:33.000Z                  2019-05-19T16:58:53.000Z
@@ -189,6 +198,27 @@ alertsEnabled                                                  1                
 buildNumber                                     R322-20190212-GA                          R322-20190212-GA
 created                                 2019-04-19T15:48:50.000Z                  2019-04-19T16:58:53.000Z
 ...                                     ...                                       ...
+```
+Another option is to filter a specific value out of the return with ``--parameter`` option, e.g. if one wants to filter activationKey and activationKeyExpires for all or some Edges:
+
+```sh
+
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55  edges_get --parameter=activationKey\|activationKeyExpires
+
+                                    Branch1-HA                  Branch-2                  Branch-3                  Branch-4
+activationKey              HS7S-QKPA-ZZCC-PG74       LHH3-8B4R-7XVJ-6J3V       JTWH-EHNW-7LUG-YQ9T       YZ8U-CKTY-8MTL-FP4R
+activationKeyExpires  2019-05-28T11:53:33.000Z  2019-05-19T16:58:53.000Z  2019-06-01T10:32:39.000Z  2019-06-01T16:10:54.000Z
+
+```
+
+or one can combine it with ``--name`` as well to filter it more specific:
+
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55  edges_get --parameter=activationKey\|activationKeyExpires --name=Branch1\|Branch-2
+                                    Branch1-HA                  Branch-2
+activationKey              HS7S-QKPA-ZZCC-PG74       LHH3-8B4R-7XVJ-6J3V
+activationKeyExpires  2019-05-28T11:53:33.000Z  2019-05-19T16:58:53.000Z
+
 ```
 
 ### Set System Properties - Method
@@ -219,6 +249,12 @@ True
 
 ## Release History
 
+* 0.0.3 
+    * Modifed edges_get method:
+        * --parameter lets user to filter output more granular
+        * --search changed to --name, reflecting really what is filtered
+        * Output of Pandas, JSON or CSV, will have the name of the Edge rather as a returned index. Simpler to read
+        * User can now define another enterprise ID rather then the default 1 
 * 0.0.2
     * Added README, Licences, and fixes bugs in vcoclient.py
 * 0.0.1
