@@ -194,6 +194,10 @@ def customers_get (args):
     client = VcoRequestManager(args.hostname)
     o = client.call_api("enterprise/getEnterprise", { "with":["enterpriseProxy"], "id": 1})
     j = json.loads(json.dumps(o))
+
+    out = format_print(j, **vars(args))
+
+    print(out)
     
    
 def edges_get (args):  
@@ -260,7 +264,7 @@ if __name__ == "__main__":
     parser_logout.set_defaults(func=logout)
 
 
-    # Get all Edges from Operator View
+    # Get all Edges
     parser_getedges = subparsers.add_parser("edges_get")
     
     parser_getedges.add_argument("--name", action="store", type=str, dest="name", 
@@ -273,6 +277,19 @@ if __name__ == "__main__":
                               help="Returns the Edges of only that given enterprise. Default all Edges of all enterprises at operator view or all Edges of an enterprise at customer view are returned.")
 
     parser_getedges.set_defaults(func=edges_get)
+
+    # Get all Customers
+    parser_getcustomers = subparsers.add_parser("customers_get")
+    
+    parser_getcustomers.add_argument("--name", action="store", type=str, dest="name", 
+                              help="Search Enterprise/Enterprises containing the given name")
+    
+    parser_getcustomers.add_argument("--parameter", action="store", type=str, dest="parameter",
+                              help="Returns only given parameters out of the returned value. Default all values are returned")
+    
+
+    parser_getcustomers.set_defaults(func=customers_get)
+
 
     # Update/insert system properties in VCO
     parser_sysprop_set = subparsers.add_parser("sysprop_set")
