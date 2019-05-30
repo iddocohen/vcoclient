@@ -166,6 +166,7 @@ def edges_get (args):
     o = client.call_api("enterprise/getEnterpriseEdges", { "with":["certificates","configuration","links","recentLinks","site"], "enterpriseId": args.id })
     j = json.loads(json.dumps(o))
     df = pd.DataFrame.from_dict(json_normalize(j), orient='columns')
+    # TODO: Removing the shalow rename warning received by Pandas. Need to investigate why I get such a warning.
     pd.options.mode.chained_assignment = None
     out = df
     out.rename(index=out.name.to_dict(), inplace=True)
@@ -176,20 +177,6 @@ def edges_get (args):
       out = out[out.columns[out.columns.str.match(args.parameter)]]
 
     out = out.T
-
-    # Wow how complicated the above is much easier, indeed uses a bit more memory...
-    '''
-    out = None 
-    if args.name and args.parameter:
-      out = df[df['name'].str.contains(args.name)]
-      out = out[out.columns[out.columns.str.match(args.parameter)]].T
-    elif args.name and not args.parameter:
-      out = df[df['name'].str.contains(args.name)].T
-    elif not args.name and args.parameter:
-      out = df[df.columns[df.columns.str.match(args.parameter)]].T
-    else:
-      out = df.T
-    '''
 
     # TODO: Lets not convert it twice in a case JSON is chosen as default output
     if args.output == "json":
