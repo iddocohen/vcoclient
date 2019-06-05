@@ -141,7 +141,7 @@ class VcoRequestManager(object):
         except:
            raise ApiException("Cannot delete cookie file")
 
-def format_print(j, name=None, parameter=None, output=None, **args):
+def format_print(j, name=None, filters=None, output=None, **args):
     df  = pd.DataFrame.from_dict(json_normalize(j), orient='columns')
     out = df
     
@@ -153,8 +153,8 @@ def format_print(j, name=None, parameter=None, output=None, **args):
     if name:
       out = df[df['name'].str.contains(name)]
 
-    if parameter:
-      out = out[out.columns[out.columns.str.match(parameter)]]
+    if filters:
+      out = out[out.columns[out.columns.str.match(filters)]]
 
     out = out.T
 
@@ -269,8 +269,8 @@ if __name__ == "__main__":
     parser_getedges.add_argument("--name", action="store", type=str, dest="name", 
                               help="Search Edge/Edges containing the given name")
     
-    parser_getedges.add_argument("--parameter", action="store", type=str, dest="parameter",
-                              help="Returns only given parameters out of the returned value. Default all values are returned")
+    parser_getedges.add_argument("--filters", action="store", type=str, dest="filters",
+                              help="Returns only given filters out of the returned value. Default all values are returned")
     
     parser_getedges.add_argument("--id", action="store", type=int, dest="id", default=1,
                               help="Returns the Edges of only that given enterprise. Default all Edges of all enterprises at operator view or all Edges of an enterprise at customer view are returned.")
@@ -283,8 +283,8 @@ if __name__ == "__main__":
     parser_getcustomers.add_argument("--name", action="store", type=str, dest="name", 
                               help="Search Enterprise/Enterprises containing the given name")
     
-    parser_getcustomers.add_argument("--parameter", action="store", type=str, dest="parameter",
-                              help="Returns only given parameters out of the returned value. Default all values are returned")
+    parser_getcustomers.add_argument("--filters", action="store", type=str, dest="filters",
+                              help="Returns only given filters out of the returned value. Default all values are returned")
     
 
     parser_getcustomers.set_defaults(func=customers_get)
