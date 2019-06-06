@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Needed libaries
-import requests, pickle, json, re, argparse, os
+import requests, pickle, json, re, argparse, os, sys
 import pandas as pd
 from pandas.io.json import json_normalize
 
@@ -141,17 +141,53 @@ class VcoRequestManager(object):
         except:
            raise ApiException("Cannot delete cookie file")
 
-def format_print(j, name=None, filters=None, output=None, **args):
-    df  = pd.DataFrame.from_dict(json_normalize(j), orient='columns')
-    out = df
-    
+def recrusive_search(y, s):
+    out = {}
+    def search(x, s, p=''):
+        if isinstance(x, dict):
+            for a in x:
+                search(x[a], s, p + a + "_")
+        elif isinstance(x, list):
+            i = 0
+            for a in x:
+                search(a, s, p + str(i) + "_")
+                i += 1
+        elif isinstance(x, (str, int, float)):
+            for _ in s.split("|"):
+              if _ in str(x):
+                out[p[:-1]] = str(x)
+
+    search(y,s)
+    return out
+        
+
+
+def format_print(j, name=None, search=None, filters=None, output=None, **args):
+    df  = pd.DataFrame.from_dict(json_normalize(j, sep='_'), orient='columns')
     # TODO: Removing the shalow rename warning received by Pandas. Need to investigate why I get such a warning.
     pd.options.mode.chained_assignment = None
-    
-    out.rename(index=out.name.to_dict(), inplace=True)
-    
+    df.rename(index=df.name.to_dict(), inplace=True)
+
+    out = df
+   
+    # Searches through JSON to find any value in search and converts it to pandas 
+    if search:
+      d = recrusive_search(j, search)
+      found = {}
+
+      for k,v in d.items():
+        l = k.split("_") 
+        n = j[int(l[0])]["name"]
+        k = k[len(l[0])+1:]
+        found.setdefault(n,{})
+        found[n].setdefault(k,{})
+        found[n]["name"] = n 
+        found[n][k] = v
+
+      out = pd.DataFrame(found).T
+      
     if name:
-      out = df[df['name'].str.contains(name)]
+      out = out[out['name'].str.contains(name)]
 
     if filters:
       out = out[out.columns[out.columns.str.match(filters)]]
@@ -165,7 +201,7 @@ def format_print(j, name=None, filters=None, output=None, **args):
     
 
     pd.options.mode.chained_assignment = 'warn'
-
+    
     return out
 
 
@@ -266,6 +302,9 @@ if __name__ == "__main__":
     # Get all Edges
     parser_getedges = subparsers.add_parser("edges_get")
     
+    parser_getedges.add_argument("--search", action="store", type=str, dest="search", 
+                              help="Search any data from properties of Edges, e.g. search for USB interfaces")
+
     parser_getedges.add_argument("--name", action="store", type=str, dest="name", 
                               help="Search Edge/Edges containing the given name")
     
