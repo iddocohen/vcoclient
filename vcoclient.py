@@ -193,7 +193,7 @@ def format_print(j, name=None, search=None, filters=None, output=None, **args):
     if output == "json":
       out = out.to_json()
     elif output == "csv":
-      out = out.T.to_csv()
+      out = out.to_csv()
     
 
     pd.options.mode.chained_assignment = 'warn'
