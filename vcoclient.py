@@ -153,7 +153,7 @@ def rsearch(x, s, p=''):
             i += 1
     elif isinstance(x, (str, int, float)):
         for _ in s.split("|"):
-          if _ in str(x):
+          if _.upper() in str(x).upper():
             yield p[:-1], x
 
 
@@ -178,7 +178,7 @@ def format_print(j, name=None, search=None, filters=None, output=None, **args):
         found[n]["name"] = n 
         found[n][k] = v
 
-      #Not sure what is more efficient, ...(found).T or ...from_dict(found, orient='index'). Fact is, from_dict does not preserve order, hence using .T for now.
+      # TODO: Not sure what is more efficient, ...(found).T or ...from_dict(found, orient='index'). Fact is, from_dict does not preserve order, hence using .T for now.
       df = pd.DataFrame(found).T
       
     if name:
