@@ -247,9 +247,9 @@ def sysprop_set (args):
     Set system properties 
     """
     #TODO: There must be a better way but Namespace object does not have .copy() or .remove() 
-    payload = {}
-    for k in vars(args):
-      payload[k] = getattr(args, k)
+    payload = vars(args)
+    #for k in vars(args):
+    #  payload[k] = getattr(args, k)
     
     del payload["func"]
     del payload["hostname"]
