@@ -141,25 +141,20 @@ class VcoRequestManager(object):
         except:
            raise ApiException("Cannot delete cookie file")
 
-def recrusive_search(y, s):
-    out = {}
-    def search(x, s, p=''):
-        if isinstance(x, dict):
-            for a in x:
-                search(x[a], s, p + a + "_")
-        elif isinstance(x, list):
-            i = 0
-            for a in x:
-                search(a, s, p + str(i) + "_")
-                i += 1
-        elif isinstance(x, (str, int, float)):
-            for _ in s.split("|"):
-              if _ in str(x):
-                out[p[:-1]] = str(x)
 
-    search(y,s)
-    return out
-        
+def rsearch(x, s, p=''):
+    if isinstance(x, dict):
+        for a in x:
+            yield from rsearch(x[a], s, p + a + "_")
+    elif isinstance(x, list):
+        i = 0
+        for a in x:
+            yield from rsearch(a, s, p + str(i) + "_")
+            i += 1
+    elif isinstance(x, (str, int, float)):
+        for _ in s.split("|"):
+          if _ in str(x):
+            yield p[:-1], x
 
 
 def format_print(j, name=None, search=None, filters=None, output=None, **args):
@@ -175,7 +170,7 @@ def format_print(j, name=None, search=None, filters=None, output=None, **args):
 
       found = {}
 
-      for k,v in recrusive_search(j, search).items():
+      for k,v in rsearch(j, search):
         l = k.split("_") 
         n = j[int(l[0])]["name"]
         k = k[len(l[0])+1:]
