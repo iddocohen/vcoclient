@@ -161,10 +161,9 @@ def format_print(j, name=None, search=None, filters=None, output=None, **args):
     df  = pd.DataFrame.from_dict(json_normalize(j, sep='_'), orient='columns')
     # TODO: Removing the shalow rename warning received by Pandas. Need to investigate why I get such a warning.
     pd.options.mode.chained_assignment = None
+
     df.rename(index=df.name.to_dict(), inplace=True)
 
-    out = df
-   
     # Searches through JSON to find any value in search and converts it to pandas 
     if search:
 
@@ -180,25 +179,25 @@ def format_print(j, name=None, search=None, filters=None, output=None, **args):
         found[n][k] = v
 
       #Not sure what is more efficient, ...(found).T or ...from_dict(found, orient='index'). Fact is, from_dict does not preserve order, hence using .T for now.
-      out = pd.DataFrame(found).T
+      df = pd.DataFrame(found).T
       
     if name:
-      out = out[out['name'].str.contains(name)]
+      df = df[df['name'].str.contains(name)]
 
     if filters:
-      out = out[out.columns[out.columns.str.match(filters)]]
+      df = df[df.columns[df.columns.str.match(filters)]]
 
-    out = out.T
+    df = df.T
 
     if output == "json":
-      out = out.to_json()
+      df = df.to_json()
     elif output == "csv":
-      out = out.to_csv()
+      df = df.to_csv()
     
 
     pd.options.mode.chained_assignment = 'warn'
     
-    return out
+    return df
 
 
 def logout(args):
