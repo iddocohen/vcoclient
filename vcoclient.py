@@ -172,10 +172,10 @@ def format_print(j, name=None, search=None, filters=None, output=None, **args):
    
     # Searches through JSON to find any value in search and converts it to pandas 
     if search:
-      d = recrusive_search(j, search)
+
       found = {}
 
-      for k,v in d.items():
+      for k,v in recrusive_search(j, search).items():
         l = k.split("_") 
         n = j[int(l[0])]["name"]
         k = k[len(l[0])+1:]
@@ -184,6 +184,7 @@ def format_print(j, name=None, search=None, filters=None, output=None, **args):
         found[n]["name"] = n 
         found[n][k] = v
 
+      #Not sure what is more efficient, ...(found).T or ...from_dict(found, orient='index'). Fact is, from_dict does not preserve order, hence using .T for now.
       out = pd.DataFrame(found).T
       
     if name:
