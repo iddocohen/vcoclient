@@ -15,7 +15,7 @@ if [ $? -eq 1 ]; then
 fi
 
 # Searching for customer name "ACME" and storing the id returned by JSON in a variable in bash
-ID=$(./vcoclient.py --vco=192.168.2.55 --output=json customers_get --name=$NAME --parameter=id | jq -r ".[].id")
+ID=$(./vcoclient.py --vco=192.168.2.55 --output=json customers_get --name=$NAME --filter=id | jq -r ".[].id")
 
 # Check we found customer "ACME" and got an ID from VCO
 if [ -z $ID ]; then
