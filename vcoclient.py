@@ -151,9 +151,12 @@ def rsearch(x, s, p=''):
         for a in x:
             yield from rsearch(a, s, p + str(i) + "_")
             i += 1
-    elif isinstance(x, (str, int, float)):
-        for _ in s.split("|"):
-          if _.upper() in str(x).upper():
+    else:
+        if s != "*":
+            for _ in s.split("|"):
+                if _.upper() in str(x).upper():
+                    yield p[:-1], x
+        else:
             yield p[:-1], x
 
 
