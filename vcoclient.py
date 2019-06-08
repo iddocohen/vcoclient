@@ -151,13 +151,12 @@ def rsearch(x, s, p=''):
         for a in x:
             yield from rsearch(a, s, p + str(i) + "_")
             i += 1
+    elif s != "*":
+        for _ in s.split("|"):
+            if _.upper() in str(x).upper():
+                yield p[:-1], x
     else:
-        if s != "*":
-            for _ in s.split("|"):
-                if _.upper() in str(x).upper():
-                    yield p[:-1], x
-        else:
-            yield p[:-1], x
+        yield p[:-1], x
 
 
 def format_print(j, name=None, search=None, filters=None, output=None, **args):
@@ -183,12 +182,13 @@ def format_print(j, name=None, search=None, filters=None, output=None, **args):
 
       # TODO: Not sure what is more efficient, ...(found).T or ...from_dict(found, orient='index'). Fact is, from_dict does not preserve order, hence using .T for now.
       df = pd.DataFrame(found).T
+      df.fillna(value=pd.np.nan, inplace=True)
       
     if name:
       df = df[df['name'].str.contains(name)]
 
     if filters:
-      df = df[df.columns[df.columns.str.match(filters)]]
+      df = df[df.columns[df.columns.str.contains(filters)]]
 
     df = df.T
 
