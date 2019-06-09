@@ -5,12 +5,10 @@ A simple VeloCloud Orchestrator (VCO) Python client
 The idea is to embrace the Linux methodology and to have one VCO client that can be used within a complex workflow under Linux.
 
 ```sh
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 logout
-True
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password=VeloCloud123
-True
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get
-                                                               0                                         1                                         2                                         3
+
+                                                         Branch1                                   Branch2                                   Branch3                                   Branch4
 activationKey                                HS7S-QKPA-ZZCC-PG74                       LHH3-8B4R-7XVJ-6J3V                       JTWH-EHNW-7LUG-YQ9T                       YZ8U-CKTY-8MTL-FP4R
 activationKeyExpires                    2019-05-28T11:53:33.000Z                  2019-05-19T16:58:53.000Z                  2019-06-01T10:32:39.000Z                  2019-06-01T16:10:54.000Z
 activationState                                        ACTIVATED                                 ACTIVATED                                 ACTIVATED                                 ACTIVATED
@@ -19,6 +17,8 @@ alertsEnabled                                                  1                
 buildNumber                                     R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA
 created                                 2019-04-19T15:48:50.000Z                  2019-04-19T16:58:53.000Z                  2019-05-02T10:32:39.000Z                  2019-05-02T16:10:54.000Z
 ...                                     ...                                       ...                                       ...                                       ...
+
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 logout
 ```
 
 It uses argparse and it is functional hooks. Each functional hook, is a mini method to accomplish something. 
@@ -118,7 +118,6 @@ optional arguments:
 
 ```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password=VeloCloud123
-True
 ```
 
 ### Logout - Method
@@ -131,7 +130,6 @@ It is best practice to use it after done using different methods with vcoclient.
 
 ```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 logout
-True
 ```
 
 ### Get Edges - Method
@@ -313,24 +311,31 @@ Enable google API for VCO:
 
 ```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py sysprop_set --name=service.client.googleMapsApi.enable --value=true
-True
 ```
 
-## Release History
-* 0.0.4
-    * Changes:
-        * Added --search in edges_get for searching any value related to edges properties. Gives one a powerful method to extract/compare values between many edges.
-        * Method login and logout will not return True anymore but will just execute as is and will raise an Exception otherwise.
-* 0.0.3 
-    * Modified edges_get method:
-        * --filters lets user to filter output more granular
-        * --search changed to --name, reflecting really what is filtered
-        * Output of Pandas, JSON or CSV, will have the name of the Edge rather as a returned index. Simpler to read.
-        * User can now define another enterprise ID rather then the default 1 
-* 0.0.2
-    * Added README, Licences, and fixes bugs in vcoclient.py
-* 0.0.1
-    * First versions
+## Changelog
+
+All notable changes to this project will be documented in this file.
+
+### [0.0.4] - 2019-06
+#### Added:
+- ``--search`` in edges_get for searching any value related to edges properties. Gives one a powerful method to extract/compare values between many edges.
+#### Changed:
+- Method login and logout will not return True anymore but will just execute as is and will raise an exception otherwise.
+        
+### [0.0.3] - 2019-05 
+#### Added:
+- Output of Pandas, JSON or CSV, will have the name of the Edge rather as a returned index. Simpler to read.
+- ``--filters`` lets user to filter output more granular
+- User can now define another enterprise ID rather then the default 1 
+#### Changed:
+- ``--search`` changed to ``--name``in edges_get, reflecting really what is filtered
+
+### [0.0.2] - 2019-05
+#### Added:
+- README, Licences, and fixes bugs in vcoclient.py
+### [0.0.1] - 2019-05
+- First versions
 
 ## Future improvements
 
