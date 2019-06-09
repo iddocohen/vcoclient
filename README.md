@@ -2,7 +2,7 @@
 
 A simple VeloCloud Orchestrator (VCO) Python client
 
-The idea is to embrace the linux methodology and to have one VCO client that can be used within a complex workflow under Linux.
+The idea is to embrace the Linux methodology and to have one VCO client that can be used within a complex workflow under Linux.
 
 ```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 logout
@@ -136,28 +136,34 @@ True
 
 ### Get Edges - Method
 
-To get a list of all or filtered VeloCloud Edges (VCEs) from VCO. 
+To get a list of all or filtered VeloCloud Edges (VCEs) from VCO. One can ``--search`` per value, get only one ``--name`` VCE and ``--filters``only given keys. Each of the methods (``--name``, ``--filters`` or ``--name``), one can use "|" to search for several values (e.g. search for VCE with name Branch1 or Branch2, one can use ``--name="Branch1|Branch2"). This gives one a powerful option to compare and evaluate several VCEs against each other and use those returned values for another workflow. 
+
+``--id`` can be used to specify VCEs from specific customer in VCO.
+
+**Please note:** ``--name``, ``--search`` and ``--filters``are all doing a loose search rather then an exact match, meaning you will get more values then maybe requested but you do not need to be very specific for your search. 
 
 ```sh
 
-usage: vcoclient.py edges_get [-h] [--name NAME] [--filters FILTERS]
-                              [--id ID]
+usage: vcoclient.py edges_get [-h] [--search SEARCH] [--name NAME]
+                              [--filters FILTERS] [--id ID]
 
 optional arguments:
-  -h, --help            show this help message and exit
-  --name NAME           Search Edge/Edges containing the given name
-  --filters FILTERS
-                        Returns only given filters out of the returned
-                        value. Default all values are returned
-  --id ID               Returns the Edges of only that given enterprise.
-                        Default all Edges of all enterprises at operator view
-                        or all Edges of an enterprise at customer view are
-                        returned.
+  -h, --help         show this help message and exit
+  --search SEARCH    Search any data from properties of Edges, e.g. search for
+                     USB interfaces
+  --name NAME        Search Edge/Edges containing the given name
+  --filters FILTERS  Returns only given filters out of the returned value.
+                     Default all values are returned
+  --id ID            Returns the Edges of only that given enterprise. Default
+                     all Edges of all enterprises at operator view or all
+                     Edges of an enterprise at customer view are returned.
+
 ```
 
 #### Example
 
-To get all, one does not need to ``--name``
+To get all VCEs, with all values and keys, use default:
+
 ```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get
                                                                0                                         1                                         2                                         3
@@ -170,7 +176,7 @@ buildNumber                                     R322-20190212-GA                
 created                                 2019-04-19T15:48:50.000Z                  2019-04-19T16:58:53.000Z                  2019-05-02T10:32:39.000Z                  2019-05-02T16:10:54.000Z
 ...                                     ...                                       ...                                       ...                                       ...
 ```
-but one can also search for one:
+or use ``--name`` to filter one branch:
 
 ```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --name=Branch1
@@ -185,10 +191,10 @@ created                                 2019-04-19T15:48:50.000Z
 ...                                     ...
 ```
 
-or even more then one: 
+or several: 
 
 ```sh
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --name=Branch1\|Branch-2
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --name="Branch1|Branch-2"
                                                                0                                         1
 activationKey                                HS7S-QKPA-ZZCC-PG74                       LHH3-8B4R-7XVJ-6J3V
 activationKeyExpires                    2019-05-28T11:53:33.000Z                  2019-05-19T16:58:53.000Z
@@ -203,7 +209,7 @@ Another option is to filter a specific value out of the return with ``--filters`
 
 ```sh
 
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55  edges_get --filters=activationKey\|activationKeyExpires
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55  edges_get --filters="activationKey|activationKeyExpires"
 
                                     Branch1-HA                  Branch-2                  Branch-3                  Branch-4
 activationKey              HS7S-QKPA-ZZCC-PG74       LHH3-8B4R-7XVJ-6J3V       JTWH-EHNW-7LUG-YQ9T       YZ8U-CKTY-8MTL-FP4R
@@ -214,13 +220,76 @@ activationKeyExpires  2019-05-28T11:53:33.000Z  2019-05-19T16:58:53.000Z  2019-0
 or one can combine it with ``--name`` as well to filter it more specific:
 
 ```sh
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55  edges_get --filters=activationKey\|activationKeyExpires --name=Branch1\|Branch-2
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55  edges_get --filters="activationKey|activationKeyExpires" --name="Branch1|Branch-2"
                                     Branch1-HA                  Branch-2
 activationKey              HS7S-QKPA-ZZCC-PG74       LHH3-8B4R-7XVJ-6J3V
 activationKeyExpires  2019-05-28T11:53:33.000Z  2019-05-19T16:58:53.000Z
 
 ```
 
+Even more, one can search for any value within the VCE properties with ``--search``, let see what if we want to see all values:
+
+```sh
+
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --search="*"
+                                                                        Branch1-HA  ...                                           Branch-4
+...
+certificates_0_certificate       -----BEGIN CERTIFICATE-----\nMIIDtTCCAp2gAwIBA...  ...  -----BEGIN CERTIFICATE-----\nMIIDtTCCAp2gAwIBA...
+certificates_0_created                                    2019-04-28T11:55:39.000Z  ...                           2019-05-14T18:00:10.000Z
+certificates_0_csrId                                                             5  ...                                                  8
+certificates_0_edgeId                                                            2  ...                                                  5
+certificates_0_edgeSerialNumber           VMware-42372a8feed7928a-96a106d97231cc5b  ...           VMware-4237c421fc52ed55-3ed39a20fbc24354
+certificates_0_enterpriseId                                                      1  ...                                                  1
+certificates_0_fingerPrint                780ac499e5e4f2968c9b35d03bdc70ef87069050  ...           af32143b2fee7e2bfca62ab0042244d7cb7f7e5e
+certificates_0_id                                                                5  ...                                                  8
+certificates_0_serialNumber                                       CA81EFD6C7AE7C89  ...                                   D4C2500333FE1757
+...
+
+```
+
+
+In the background ``--search`` flattens the returned JSON and returns all values when ``*`` used. One can however, search for specific values as well, e.g. lets search for interface properties with 191. or 10. IPs:
+
+```sh
+
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --search="191.|10."
+
+                                                     Branch1-HA     Branch-2                  Branch-3                  Branch-4
+....
+configuration_enterprise_modules_0_edgeSpecific...  191.168.1.2  191.168.3.2                       NaN                       NaN
+configuration_enterprise_modules_0_edgeSpecific...  191.168.1.1  191.168.3.1                       NaN                       NaN
+configuration_enterprise_modules_0_edgeSpecific...  191.168.2.2  191.168.4.2                  10.0.3.2                       NaN
+configuration_enterprise_modules_0_edgeSpecific...  191.168.2.1  191.168.4.1                  10.0.3.1                       NaN
+configuration_enterprise_modules_0_edgeSpecific...          NaN     10.2.1.2                       NaN                       NaN
+configuration_enterprise_modules_0_edgeSpecific...          NaN     10.2.1.1                       NaN                       NaN
+configuration_enterprise_modules_0_edgeSpecific...          NaN     10.2.2.2                       NaN                       NaN
+configuration_enterprise_modules_0_edgeSpecific...          NaN     10.2.2.1                       NaN                       NaN
+configuration_enterprise_modules_1_edgeSpecific...          NaN  191.168.0.3                10.0.254.2                       NaN
+configuration_enterprise_modules_1_edgeSpecific...          NaN   10.0.254.2                       NaN                       NaN
+links_0_displayName                                 191.168.1.2  191.168.3.2               191.168.0.5                       NaN
+links_0_ipAddress                                   191.168.1.2  191.168.3.2               191.168.0.5                       NaN
+links_1_displayName                                 191.168.2.2  191.168.4.2                       NaN                       NaN
+links_1_ipAddress                                   191.168.2.2  191.168.4.2                       NaN                       NaN
+links_2_ipAddress                                           NaN     10.2.1.2                       NaN                       NaN
+links_3_ipAddress                                           NaN     10.2.2.2                       NaN                       NaN
+...
+```
+
+and filter the 'ipAddress' column only for all VCEs (Branch1-HA, Branch-2, Branch-3 or Branch-4):
+
+```sh
+
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get --search="191.|10." --filters="ipAddress"
+                    Branch1-HA     Branch-2     Branch-3 Branch-4
+links_0_ipAddress  191.168.1.2  191.168.3.2  191.168.0.5      NaN
+links_1_ipAddress  191.168.2.2  191.168.4.2          NaN      NaN
+links_2_ipAddress          NaN     10.2.1.2          NaN      NaN
+links_3_ipAddress          NaN     10.2.2.2          NaN      NaN
+
+```
+
+All those outputs can be then converted into CSV or JSON.
+ 
 ### Set System Properties - Method
 
 System properties of VCO can be changed/added. Only applicable at "operator" mode but needed for on-premiss installation of VCO.
@@ -248,12 +317,15 @@ True
 ```
 
 ## Release History
-
+* 0.0.4
+    * Changes:
+        * Added --search in edges_get for searching any value related to edges properties. Gives one a powerful method to extract/compare values between many edges.
+        * Method login and logout will not return True anymore but will just execute as is and will raise an Exception otherwise.
 * 0.0.3 
-    * Modifed edges_get method:
+    * Modified edges_get method:
         * --filters lets user to filter output more granular
         * --search changed to --name, reflecting really what is filtered
-        * Output of Pandas, JSON or CSV, will have the name of the Edge rather as a returned index. Simpler to read
+        * Output of Pandas, JSON or CSV, will have the name of the Edge rather as a returned index. Simpler to read.
         * User can now define another enterprise ID rather then the default 1 
 * 0.0.2
     * Added README, Licences, and fixes bugs in vcoclient.py
