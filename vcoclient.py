@@ -1,18 +1,62 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-# Needed libaries
+""" Description:
+
+This program is a simple VeloCloud Orchestrator (VCO) Python client
+
+The idea is to embrace the Linux methodology and to have a VCO client that can be used within a complex workflow under Linux. For example:
+
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password=VeloCloud123
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get
+
+                                                         Branch1                                   Branch2                                   Branch3                                   Branch4
+activationKey                                HS7S-QKPA-ZZCC-PG74                       LHH3-8B4R-7XVJ-6J3V                       JTWH-EHNW-7LUG-YQ9T                       YZ8U-CKTY-8MTL-FP4R
+activationKeyExpires                    2019-05-28T11:53:33.000Z                  2019-05-19T16:58:53.000Z                  2019-06-01T10:32:39.000Z                  2019-06-01T16:10:54.000Z
+activationState                                        ACTIVATED                                 ACTIVATED                                 ACTIVATED                                 ACTIVATED
+activationTime                          2019-04-28T11:55:38.000Z                  2019-04-19T17:17:51.000Z                  2019-05-02T10:55:10.000Z                  2019-05-02T19:18:20.000Z
+alertsEnabled                                                  1                                         1                                         1                                         1
+buildNumber                                     R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA
+created                                 2019-04-19T15:48:50.000Z                  2019-04-19T16:58:53.000Z                  2019-05-02T10:32:39.000Z                  2019-05-02T16:10:54.000Z
+...                                     ...                                       ...                                       ...                                       ...
+
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 logout
+```
+
+It uses argparse and it is functional hooks. Each functional hook, is a mini method to accomplish something.
+
+Under https://github.com/iddocohen/vcoclient one can read methods implemented.
+
+"""
+
+
+# Generic Libs
 import requests, pickle, json, re, argparse, os, sys
+
+# Specific Libs
 import pandas as pd
 from pandas.io.json import json_normalize
 
-# To be able to disable SSL warnings as needed e.g. development environment
+# Specific imports
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+# Global Variables
 VERIFY_SSL=False
 
 # TODO: Might want to have some logic to increase rows/columns
 #pd.set_option('display.max_columns', 100)
 #pd.set_option('display.max_rows', 100)
+
+__author__ = "Iddo Cohen"
+__copyright__ = "Copyright 2019"
+__credits__ = "Iddo Cohen"
+__license__ = "MIT"
+__version__ = "0.0.4"
+__maintainer__ ="Iddo Cohen"
+__email__ = "iddocohen@gmail.com"
+__status__ = "Dev"
+
 
 class ApiException(Exception):
     pass
@@ -134,12 +178,11 @@ class VcoRequestManager(object):
         """
         Delete VCO session cookie
         """
-      
         try: 
            os.remove(self._store_cookie)
            return True
-        except:
-           raise ApiException("Cannot delete cookie file")
+        except Exception as e:
+           raise ApiException(str(e))
 
 
 def rsearch(x, s, p=''):
@@ -296,14 +339,14 @@ if __name__ == "__main__":
     # Get all Edges
     parser_getedges = subparsers.add_parser("edges_get")
     
-    parser_getedges.add_argument("--search", action="store", type=str, dest="search", 
-                              help="Search any data from properties of Edges, e.g. search for USB interfaces")
-
     parser_getedges.add_argument("--name", action="store", type=str, dest="name", 
                               help="Search Edge/Edges containing the given name")
     
     parser_getedges.add_argument("--filters", action="store", type=str, dest="filters",
                               help="Returns only given filters out of the returned value. Default all values are returned")
+
+    parser_getedges.add_argument("--search", action="store", type=str, dest="search", 
+                              help="Search any data from properties of Edges, e.g. search for USB interfaces")
     
     parser_getedges.add_argument("--id", action="store", type=int, dest="id", default=1,
                               help="Returns the Edges of only that given enterprise. Default all Edges of all enterprises at operator view or all Edges of an enterprise at customer view are returned.")
