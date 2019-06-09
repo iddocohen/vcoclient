@@ -66,8 +66,8 @@ class VcoRequestManager(object):
                 self._save_cookie()
             else:
                 self._del_cookie()
-            return True
-        return False
+        else:
+            raise ApiException(response_dict["error"]["message"])
         
          
     def call_api(self, method, params):
@@ -113,9 +113,8 @@ class VcoRequestManager(object):
         with open(self._store_cookie, "wb") as f:
             try:
                 pickle.dump(self._session.cookies, f)
-                return True
-            except:
-                return False	
+            except Exception as e:
+                raise ApiException(str(e)) 	
 
     def _load_cookie(self):
         """
@@ -128,8 +127,8 @@ class VcoRequestManager(object):
             try:
                self._session.cookies.update(pickle.load(f))
                return True
-            except:
-               return False
+            except Exception as e:
+               raise ApiException(str(e)) 	
 
     def _del_cookie(self):
         """
@@ -138,6 +137,7 @@ class VcoRequestManager(object):
       
         try: 
            os.remove(self._store_cookie)
+           return True
         except:
            raise ApiException("Cannot delete cookie file")
 
@@ -208,8 +208,7 @@ def logout(args):
     Logout from VCO
     """ 
     client = VcoRequestManager(args.hostname)
-    o = client.authenticate(logout=True) 
-    print(o)
+    client.authenticate(logout=True) 
     
 
 def login (args):
@@ -217,8 +216,7 @@ def login (args):
     Login at VCO
     """
     client = VcoRequestManager(args.hostname)
-    o = client.authenticate(args.username, args.password, is_operator=args.operator)
-    print (o)
+    client.authenticate(args.username, args.password, is_operator=args.operator)
 
 def customers_get (args):
     """
@@ -261,9 +259,7 @@ def sysprop_set (args):
     client = VcoRequestManager(args.hostname)
     o = client.call_api("systemProperty/insertOrUpdateSystemProperty", payload)
     if "rows" in o:
-      print("True")
-    else:
-      print(o)
+      print("Done")
     
 
 if __name__ == "__main__":
