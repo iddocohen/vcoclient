@@ -8,7 +8,8 @@ This program is a simple VeloCloud Orchestrator (VCO) Python client
 The idea is to embrace the Linux methodology and to have a VCO client that can be used within a complex workflow under Linux. For example:
 
 ```sh
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password=VeloCloud123
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password
+Password:
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get
 
                                                          Branch1                                   Branch2                                   Branch3                                   Branch4
@@ -32,7 +33,14 @@ Under https://github.com/iddocohen/vcoclient one can read methods implemented.
 
 
 # Generic Libs
-import requests, pickle, json, re, argparse, os, sys
+import requests
+import pickle
+import json
+import re 
+import argparse
+import os
+import sys
+import getpass
 
 # Specific Libs
 import pandas as pd
@@ -52,11 +60,17 @@ __author__ = "Iddo Cohen"
 __copyright__ = "Copyright 2019"
 __credits__ = "Iddo Cohen"
 __license__ = "MIT"
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __maintainer__ ="Iddo Cohen"
 __email__ = "iddocohen@gmail.com"
 __status__ = "Dev"
 
+class Password(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string):
+        if values is None:
+            values = getpass.getpass()
+
+        setattr(namespace, self.dest, values)
 
 class ApiException(Exception):
     pass
@@ -68,6 +82,8 @@ class VcoRequestManager(object):
         """
         Init the Class
         """
+        if not hostname:
+            raise ApiException("Hostname not defined")
         self._session = requests.Session()
         self._verify_ssl = verify_ssl
         if self._verify_ssl == False:
@@ -310,7 +326,7 @@ if __name__ == "__main__":
     Based on the arguements provided, it will execute a given function
     """
     parser = argparse.ArgumentParser(description="A simple VeloCloud Orchestrator (VCO) client via Python")
-    parser.add_argument("--vco", action="store", type=str, dest="hostname", required=True,
+    parser.add_argument("--vco", action="store", type=str, dest="hostname", default=os.getenv('VCO_HOST', None),
                         help="Hostname/IP of VCO")
     parser.add_argument("--output", action="store", type=str, dest="output", default="pandas", choices=["pandas", "json", "csv"],
                         help="Pandas tables are used as default output method but one can also use 'json' or 'csv'")
@@ -320,10 +336,10 @@ if __name__ == "__main__":
 
     # Login function
     parser_login = subparsers.add_parser("login")
-    parser_login.add_argument("--username", action="store", type=str, dest="username", required=True,
+    parser_login.add_argument("--username", action="store", type=str, dest="username", default=os.getenv('VCO_USER', None),
                               help="Username for Authentication")
 
-    parser_login.add_argument("--password", action="store", type=str, dest="password", default="",
+    parser_login.add_argument("--password", action=Password, type=str, dest="password", nargs='?', default=os.getenv('VCO_PASS', ""),
                               help="Password for Authentication")
     
     parser_login.add_argument("--no-operator", action="store_false", dest="operator", default=True,
