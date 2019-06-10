@@ -203,12 +203,12 @@ class VcoRequestManager(object):
 
 def rsearch(x, s, p=''):
     if isinstance(x, dict):
-        for a in x:
-            yield from rsearch(x[a], s, p + a + "_")
+        for _ in x:
+            yield from rsearch(x[_], s, p + _ + "_")
     elif isinstance(x, list):
         i = 0
-        for a in x:
-            yield from rsearch(a, s, p + str(i) + "_")
+        for _ in x:
+            yield from rsearch(_, s, p + str(i) + "_")
             i += 1
     elif s != "*":
         for _ in s.split("|"):
@@ -218,7 +218,7 @@ def rsearch(x, s, p=''):
         yield p[:-1], x
 
 
-def format_print(j, name=None, search=None, filters=None, output=None, **args):
+def format_print(j, name=None, search=None, filters=None, output=None, rows=None, **args):
     df  = pd.DataFrame.from_dict(json_normalize(j, sep='_'), orient='columns')
     # TODO: Removing the shalow rename warning received by Pandas. Need to investigate why I get such a warning.
     pd.options.mode.chained_assignment = None
@@ -231,9 +231,9 @@ def format_print(j, name=None, search=None, filters=None, output=None, **args):
       found = {}
 
       for k,v in rsearch(j, search):
-        l = k.split("_") 
-        n = j[int(l[0])]["name"]
-        k = k[len(l[0])+1:]
+        i, *_ = k.split("_")
+        n = j[int(i)]["name"]
+        k = k[len(i)+1:]
         found.setdefault(n,{})
         found[n].setdefault(k,{})
         found[n]["name"] = n 
@@ -249,7 +249,13 @@ def format_print(j, name=None, search=None, filters=None, output=None, **args):
     if filters:
       df = df[df.columns[df.columns.str.contains(filters)]]
 
+    if "name" in df:
+        df.drop("name", axis=1, inplace=True)
+
     df = df.T
+
+    if rows:
+        df = list(df.index)
 
     if output == "json":
       df = df.to_json()
@@ -366,6 +372,9 @@ if __name__ == "__main__":
     
     parser_getedges.add_argument("--id", action="store", type=int, dest="id", default=1,
                               help="Returns the Edges of only that given enterprise. Default all Edges of all enterprises at operator view or all Edges of an enterprise at customer view are returned.")
+
+    parser_getedges.add_argument("--rows_name", action="store_true", dest="rows", default=False,
+                              help="Returns only the row names from the output result.")
 
     parser_getedges.set_defaults(func=edges_get)
 
