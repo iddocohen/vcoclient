@@ -288,7 +288,7 @@ def customers_get (args):
     Gets customers from VCO.
     """
     client = VcoRequestManager(args.hostname)
-    o = client.call_api("network/getNetworkEnterprises", { "with":["edgeCount", "edgeConfigUpdate"], "networkId": 1})
+    o = client.call_api("network/getNetworkEnterprises", { "with":["edges", "edgeCount", "edgeConfigUpdate"], "networkId": 1})
     j = json.loads(json.dumps(o))
 
     out = format_print(j, **vars(args))
@@ -301,7 +301,7 @@ def edges_get (args):
     Gets edges from VCO.  
     """
     client = VcoRequestManager(args.hostname)
-    o = client.call_api("enterprise/getEnterpriseEdges", { "with":["certificates","configuration","links","recentLinks","site"], "enterpriseId": args.id })
+    o = client.call_api("enterprise/getEnterpriseEdges", { "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": args.id })
     j = json.loads(json.dumps(o))
 
     out = format_print(j, **vars(args)) 
