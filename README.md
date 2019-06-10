@@ -167,19 +167,20 @@ To get a list of all or filtered VeloCloud Edges (VCEs) from VCO. One can ``--se
 
 ```sh
 
-usage: vcoclient.py edges_get [-h] [--search SEARCH] [--name NAME]
-                              [--filters FILTERS] [--id ID]
+usage: vcoclient.py edges_get [-h] [--name NAME] [--filters FILTERS]
+                              [--search SEARCH] [--id ID] [--rows_name]
 
 optional arguments:
   -h, --help         show this help message and exit
-  --search SEARCH    Search any data from properties of Edges, e.g. search for
-                     USB interfaces
   --name NAME        Search Edge/Edges containing the given name
   --filters FILTERS  Returns only given filters out of the returned value.
                      Default all values are returned
+  --search SEARCH    Search any data from properties of Edges, e.g. search for
+                     USB interfaces
   --id ID            Returns the Edges of only that given enterprise. Default
                      all Edges of all enterprises at operator view or all
                      Edges of an enterprise at customer view are returned.
+  --rows_name        Returns only the row names from the output result.
 
 ```
 
@@ -345,9 +346,11 @@ All notable changes to this project will be documented in this file.
 ### [0.0.5] - 2019-06
 #### Added:
 - Using getpass for ``--password`` to make it more secure.
-- Adding os.env option for username (VCO_USER), password (VCO_PASS) and host (VCO_IP) for easiness.
+- Adding os.env option for username (VCO_USER), password (VCO_PASS) and host (VCO_HOST) for easiness.
+- Adding functionality to get row names only via ``--rows_name`` from results.
 #### Change:
 - Handling hostname has changed and will raise exception if not given via os or input by user.
+- Handling data structure more efficiently (e.g. unpacking only needed value from list)
 
 ### [0.0.4] - 2019-06
 #### Added:
