@@ -127,7 +127,7 @@ class VcoRequestManager(object):
             else:
                 self._del_cookie()
         else:
-            raise ApiException(response_dict["error"]["message"])
+            raise ApiException(r.text)
         
          
     def call_api(self, method, params):
