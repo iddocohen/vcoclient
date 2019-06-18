@@ -1,4 +1,5 @@
 *.swp
+*.bk
 *.pyc
 venv/
 workflow_dev/
