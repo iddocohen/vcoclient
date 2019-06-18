@@ -50,7 +50,35 @@ from pandas.io.json import json_normalize
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 # Global Variables
+
 VERIFY_SSL=False
+
+config_api_url = {
+    "login"         :    "",
+    "logout"        :    "",
+    "customers_get" :    "network/getNetworkEnterprises",
+    "sysprop_set"   :    "systemProperty/insertOrUpdateSystemProperty",
+    "edges_get"     :    "enterprise/getEnterpriseEdges",
+    "default"       :    ""
+}
+config_api_param   = {
+    "edges_get"     :    { "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": "%(id)s" },    
+    "customers_get" :    { "with":["edges", "edgeCount", "edgeConfigUpdate"], "networkId": 1},
+    "sysprop_set"   :    { "name": "%(name)s", "value": "%(value)s"},
+    "default"       :    None
+}
+config_api_call  = {
+    "login"         :    "authenticate", 
+    "logout"        :    "authenticate",
+    "default"       :    "call_api"
+}
+config_out_mani  = {
+    "edges_get"     :    "format_by_name",
+    "customers_get" :    "format_by_name",
+    "default"       :    None
+}
+
+
 
 # TODO: Might want to have some logic to increase rows/columns
 #pd.set_option('display.max_columns', 100)
@@ -60,7 +88,7 @@ __author__ = "Iddo Cohen"
 __copyright__ = "Copyright 2019"
 __credits__ = "Iddo Cohen"
 __license__ = "MIT"
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 __maintainer__ ="Iddo Cohen"
 __email__ = "iddocohen@gmail.com"
 __status__ = "Dev"
@@ -103,7 +131,7 @@ class VcoRequestManager(object):
         proto = "https://"
         return proto + hostname
 
-    def authenticate(self, username="", password="", logout=False, is_operator=True):
+    def authenticate(self, username="", password="", logout=False, is_operator=True, *args, **kwargs):
         """
         Authenticate to API - on success, a cookie is stored in the session and file
         """
@@ -130,7 +158,7 @@ class VcoRequestManager(object):
             raise ApiException(r.text)
         
          
-    def call_api(self, method, params):
+    def call_api(self, method=None, params=None, *args, **kwargs):
         """
         Build and submit a request
         Returns method result as a Python dictionary
@@ -138,7 +166,10 @@ class VcoRequestManager(object):
         if "velocloud.session" not in self._session.cookies: 
             if not self._load_cookie():
                 raise ApiException("Cannot load session cookie") 
-        
+
+        if not method:
+            raise ApiExeception("No Api Method defined")        
+
         self._seqno += 1
         headers = { "Content-Type": "application/json" }
         method = self._clean_method_name(method)
@@ -201,131 +232,119 @@ class VcoRequestManager(object):
            raise ApiException(str(e))
 
 
-def rsearch(x, s, p=''):
-    if isinstance(x, dict):
-        for _ in x:
-            yield from rsearch(x[_], s, p + _ + "_")
-    elif isinstance(x, list):
-        i = 0
-        for _ in x:
-            yield from rsearch(_, s, p + str(i) + "_")
-            i += 1
-    elif s != "*":
-        for _ in s.split("|"):
-            if _.upper() in str(x).upper():
+class VcoApiExecuteError(Exception):
+   pass
+
+class VcoApiExecute(object):
+    def __init__(self, **args):
+        if "dest" not in args:
+            raise VcoApiExecuteError("Dest not defined in argparse object")        
+
+        name        = args["dest"]
+        self.url    = config_api_url.get(name, "")
+        self.param  = self.__replace_placeholder(config_api_param.get(name, config_api_param["default"]), **args)
+        self.call   = config_api_call.get(name, config_api_call["default"])
+        self.out    = config_out_mani.get(name, config_out_mani["default"])
+        self.client = VcoRequestManager(args["hostname"])
+        self.p      = ""
+
+        self.__internal_call(**args)
+
+    def __internal_call(self, **args):
+        try:
+            if self.call:
+                args["method"] = self.url
+                args["params"] = self.param
+                o = getattr(self.client, self.call)(**args)
+                if self.out and o:
+                    self.p = getattr(self, self.out)(o, **args)
+        except Exception as e:
+            raise VcoApiExecuteError(str(e))
+
+    def __str__(self):
+        return str(self.p)
+
+    def format_by_name(self, j, name=None, search=None, filters=None, output=None, rows=None, **args):
+        df  = pd.DataFrame.from_dict(json_normalize(j, sep='_'), orient='columns')
+        df.rename(index=df.name.to_dict(), inplace=True)
+
+        if search:
+
+          found = {}
+
+          for k,v in self.__search_value(j, search):
+            i, *_ = k.split("_")
+            n = j[int(i)]["name"]
+            k = k[len(i)+1:]
+            found.setdefault(n,{})
+            found[n].setdefault(k,{})
+            found[n]["name"] = n 
+            found[n][k] = v
+
+          # TODO: Not sure what is more efficient, ...(found).T or ...from_dict(found, orient='index'). Fact is, from_dict does not preserve order, hence using .T for now.
+          df = pd.DataFrame(found).T
+          
+        if name:
+          df = df[df['name'].str.contains(name)]
+
+        if filters:
+          df = df[df.columns[df.columns.str.contains(filters)]]
+
+        if "name" in df:
+            df.drop("name", axis=1, inplace=True)
+
+        df = df.T
+        df.fillna(value=pd.np.nan, inplace=True)
+
+        if rows:
+            df = list(df.index)
+
+        if output == "json":
+          df = df.to_json()
+        elif output == "csv":
+          df = df.to_csv()
+        
+        return df
+
+
+    @staticmethod 
+    def __replace_placeholder (dic, **ph):
+        def recrusive (x):
+            if isinstance (x, dict):
+                return {_: recrusive(x[_]) for _ in x}
+            elif isinstance(x, list):
+                return [recrusive(_) for _ in x]
+            elif isinstance(x, str):
+                r = x % ph
+                try: 
+                    r = int(r)
+                except:
+                    pass
+                return r
+            else:
+                return x    
+        return recrusive(dic)
+
+    @staticmethod
+    def __search_value(y, z):
+        def rsearch(x, s, p=''):
+            if isinstance(x, dict):
+                for _ in x:
+                    yield from rsearch(x[_], s, p + _ + "_")
+            elif isinstance(x, list):
+                i = 0
+                for _ in x:
+                    yield from rsearch(_, s, p + str(i) + "_")
+                    i += 1
+            elif s != "*":
+                for _ in s.split("|"):
+                    if _.upper() in str(x).upper():
+                        yield p[:-1], x
+            else:
                 yield p[:-1], x
-    else:
-        yield p[:-1], x
+        return rsearch(y, z)
 
 
-def format_print(j, name=None, search=None, filters=None, output=None, rows=None, **args):
-    df  = pd.DataFrame.from_dict(json_normalize(j, sep='_'), orient='columns')
-    # TODO: Removing the shalow rename warning received by Pandas. Need to investigate why I get such a warning.
-    pd.options.mode.chained_assignment = None
-
-    df.rename(index=df.name.to_dict(), inplace=True)
-
-    # Searches through JSON to find any value in search and converts it to pandas 
-    if search:
-
-      found = {}
-
-      for k,v in rsearch(j, search):
-        i, *_ = k.split("_")
-        n = j[int(i)]["name"]
-        k = k[len(i)+1:]
-        found.setdefault(n,{})
-        found[n].setdefault(k,{})
-        found[n]["name"] = n 
-        found[n][k] = v
-
-      # TODO: Not sure what is more efficient, ...(found).T or ...from_dict(found, orient='index'). Fact is, from_dict does not preserve order, hence using .T for now.
-      df = pd.DataFrame(found).T
-      df.fillna(value=pd.np.nan, inplace=True)
-      
-    if name:
-      df = df[df['name'].str.contains(name)]
-
-    if filters:
-      df = df[df.columns[df.columns.str.contains(filters)]]
-
-    if "name" in df:
-        df.drop("name", axis=1, inplace=True)
-
-    df = df.T
-
-    if rows:
-        df = list(df.index)
-
-    if output == "json":
-      df = df.to_json()
-    elif output == "csv":
-      df = df.to_csv()
-    
-
-    pd.options.mode.chained_assignment = 'warn'
-    
-    return df
-
-
-def logout(args):
-    """
-    Logout from VCO
-    """ 
-    client = VcoRequestManager(args.hostname)
-    client.authenticate(logout=True) 
-    
-
-def login (args):
-    """
-    Login at VCO
-    """
-    client = VcoRequestManager(args.hostname)
-    client.authenticate(args.username, args.password, is_operator=args.operator)
-
-def customers_get (args):
-    """
-    Gets customers from VCO.
-    """
-    client = VcoRequestManager(args.hostname)
-    o = client.call_api("network/getNetworkEnterprises", { "with":["edges", "edgeCount", "edgeConfigUpdate"], "networkId": 1})
-    j = json.loads(json.dumps(o))
-
-    out = format_print(j, **vars(args))
-
-    print(out)
-    
-   
-def edges_get (args):  
-    """
-    Gets edges from VCO.  
-    """
-    client = VcoRequestManager(args.hostname)
-    o = client.call_api("enterprise/getEnterpriseEdges", { "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": args.id })
-    j = json.loads(json.dumps(o))
-
-    out = format_print(j, **vars(args)) 
-
-    print(out)
-
-def sysprop_set (args):
-    """
-    Set system properties 
-    """
-    #TODO: There must be a better way but Namespace object does not have .copy() or .remove() 
-    payload = {}
-    for k in vars(args):
-      payload[k] = getattr(args, k)
-    
-    del payload["func"]
-    del payload["hostname"]
-    del payload["output"]
-
-    client = VcoRequestManager(args.hostname)
-    o = client.call_api("systemProperty/insertOrUpdateSystemProperty", payload)
-    if "rows" in o:
-      print("Done")
-    
 
 if __name__ == "__main__":
     """
@@ -351,11 +370,12 @@ if __name__ == "__main__":
     parser_login.add_argument("--no-operator", action="store_false", dest="operator", default=True,
                               help="Per default we login as operator to VCO. If not, use this flag")
 
-    parser_login.set_defaults(func=login)
+    parser_login.set_defaults(dest="login")
     
     # Logout function
     parser_logout = subparsers.add_parser("logout")
-    parser_logout.set_defaults(func=logout)
+    parser_logout.set_defaults(dest="logout")
+    parser_logout.set_defaults(logout=True)
 
 
     # Get all Edges
@@ -376,7 +396,7 @@ if __name__ == "__main__":
     parser_getedges.add_argument("--rows_name", action="store_true", dest="rows", default=False,
                               help="Returns only the row names from the output result.")
 
-    parser_getedges.set_defaults(func=edges_get)
+    parser_getedges.set_defaults(dest="edges_get")
 
     # Get all Customers
     parser_getcustomers = subparsers.add_parser("customers_get")
@@ -388,7 +408,7 @@ if __name__ == "__main__":
                               help="Returns only given filters out of the returned value. Default all values are returned")
     
 
-    parser_getcustomers.set_defaults(func=customers_get)
+    parser_getcustomers.set_defaults(dest="customers_get")
 
 
     # Update/insert system properties in VCO
@@ -400,8 +420,10 @@ if __name__ == "__main__":
     parser_sysprop_set.add_argument("--value", action="store", type=str, dest="value", required=True, 
                               help="New value of the system property")
     
-    parser_sysprop_set.set_defaults(func=sysprop_set)
+    parser_sysprop_set.set_defaults(dest="sysprop_set")
     
     args = parser.parse_args()
-    args.func(args)
+    obj = VcoApiExecute(**vars(args))
+    print(obj)
+    #args.func(args)
 

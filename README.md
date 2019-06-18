@@ -343,6 +343,12 @@ Enable google API for VCO:
 
 All notable changes to this project will be documented in this file.
 
+### [0.0.6] - 2019-06
+#### Changed:
+- Merged functions into one Class for easier creating new methods for vcoclient. Rather then having a function for each argparse, we have one Class taking care of it.
+#### Removed:
+- Fixed warning issue with Pandas renaming syntax of index
+- Removed memory footprint of variables
 ### [0.0.5] - 2019-06
 #### Added:
 - Using getpass for ``--password`` to make it more secure.
