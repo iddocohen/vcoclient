@@ -367,7 +367,7 @@ if __name__ == "__main__":
     parser_login.add_argument("--password", action=Password, type=str, dest="password", nargs='?', default=os.getenv('VCO_PASS', ""),
                               help="Password for Authentication")
     
-    parser_login.add_argument("--no-operator", action="store_false", dest="operator", default=True,
+    parser_login.add_argument("--no-operator", action="store_false", dest="is_operator", default=True,
                               help="Per default we login as operator to VCO. If not, use this flag")
 
     parser_login.set_defaults(dest="login")
