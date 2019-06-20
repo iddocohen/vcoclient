@@ -54,28 +54,31 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 VERIFY_SSL=False
 
 config_api_url = {
-    "login"         :    "",
-    "logout"        :    "",
-    "customers_get" :    "network/getNetworkEnterprises",
-    "sysprop_set"   :    "systemProperty/insertOrUpdateSystemProperty",
-    "edges_get"     :    "enterprise/getEnterpriseEdges",
-    "default"       :    ""
+    "login"                  :    "",
+    "logout"                 :    "",
+    "operator_customers_get" :    "network/getNetworkEnterprises",
+    "msp_customers_get"      :    "enterpriseProxy/getEnterpriseProxyEnterprises",
+    "sysprop_set"            :    "systemProperty/insertOrUpdateSystemProperty",
+    "edges_get"              :    "enterprise/getEnterpriseEdges",
+    "default"                :    ""
 }
 config_api_param   = {
-    "edges_get"     :    { "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": "%(id)s" },    
-    "customers_get" :    { "with":["edges", "edgeCount", "edgeConfigUpdate"], "networkId": 1},
-    "sysprop_set"   :    { "name": "%(name)s", "value": "%(value)s"},
-    "default"       :    None
+    "edges_get"              :    { "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": "%(id)s" },    
+    "operator_customers_get" :    { "with":["edges"], "networkId": 1},
+    "msp_customers_get"      :    { "with":["edges"]},
+    "sysprop_set"            :    { "name": "%(name)s", "value": "%(value)s"},
+    "default"                :    None
 }
 config_api_call  = {
-    "login"         :    "authenticate", 
-    "logout"        :    "authenticate",
-    "default"       :    "call_api"
+    "login"                  :    "authenticate", 
+    "logout"                 :    "authenticate",
+    "default"                :    "call_api"
 }
 config_out_mani  = {
-    "edges_get"     :    "format_by_name",
-    "customers_get" :    "format_by_name",
-    "default"       :    None
+    "login"                  :    None,
+    "logout"                 :    None,
+    "sysprop_set"            :    None,
+    "default"                :    "format_by_name",
 }
 
 
@@ -88,7 +91,7 @@ __author__ = "Iddo Cohen"
 __copyright__ = "Copyright 2019"
 __credits__ = "Iddo Cohen"
 __license__ = "MIT"
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 __maintainer__ ="Iddo Cohen"
 __email__ = "iddocohen@gmail.com"
 __status__ = "Dev"
@@ -147,9 +150,14 @@ class VcoRequestManager(object):
         r = self._session.post(url, headers=headers, data=json.dumps(data),
                                allow_redirects=True, verify=self._verify_ssl)
 
-        # TODO: Different status for "missing" string in cookie
-        #if r.status_code == 200 and "missing" not in self._session.cookies["velocloud.session"] and self._save_cookie():
         if r.status_code == 200:
+            if "velocloud.message" in self._session.cookies:
+                if "Invalid" in self._session.cookies["velocloud.message"]:
+                    raise ApiException(self._session.cookies["velocloud.message"].replace("%20", " "))
+
+            if "velocloud.session" not in self._session.cookies:
+                raise ApiException("Cookie not received by server - something is very wrong")
+
             if not logout:
                 self._save_cookie()
             else:
@@ -246,7 +254,7 @@ class VcoApiExecute(object):
         self.call   = config_api_call.get(name, config_api_call["default"])
         self.out    = config_out_mani.get(name, config_out_mani["default"])
         self.client = VcoRequestManager(args["hostname"])
-        self.p      = ""
+        self.p      = None
 
         self.__internal_call(**args)
 
@@ -259,10 +267,10 @@ class VcoApiExecute(object):
                 if self.out and o:
                     self.p = getattr(self, self.out)(o, **args)
         except Exception as e:
-            raise VcoApiExecuteError(str(e))
-
-    def __str__(self):
-        return str(self.p)
+            if type(e).__name__ != "ApiException":
+                raise VcoApiExecuteError(str(e))
+            else:
+                raise e
 
     def format_by_name(self, j, name=None, search=None, filters=None, output=None, rows=None, **args):
         df  = pd.DataFrame.from_dict(json_normalize(j, sep='_'), orient='columns')
@@ -398,17 +406,40 @@ if __name__ == "__main__":
 
     parser_getedges.set_defaults(dest="edges_get")
 
-    # Get all Customers
-    parser_getcustomers = subparsers.add_parser("customers_get")
+    # Get all Customers as operator
+    parser_getcustomers_operator = subparsers.add_parser("operator_customers_get")
     
-    parser_getcustomers.add_argument("--name", action="store", type=str, dest="name", 
+    parser_getcustomers_operator.add_argument("--name", action="store", type=str, dest="name", 
                               help="Search Enterprise/Enterprises containing the given name")
     
-    parser_getcustomers.add_argument("--filters", action="store", type=str, dest="filters",
+    parser_getcustomers_operator.add_argument("--filters", action="store", type=str, dest="filters",
                               help="Returns only given filters out of the returned value. Default all values are returned")
     
+    parser_getcustomers_operator.add_argument("--search", action="store", type=str, dest="search", 
+                              help="Search any data from properties of customers, e.g. search for particular edge")
 
-    parser_getcustomers.set_defaults(dest="customers_get")
+    parser_getcustomers_operator.add_argument("--rows_name", action="store_true", dest="rows", default=False,
+                              help="Returns only the row names from the output result.")
+
+    parser_getcustomers_operator.set_defaults(dest="operator_customers_get")
+
+    # Get all Customers as msp
+    parser_getcustomers_msp = subparsers.add_parser("msp_customers_get")
+    
+    parser_getcustomers_msp.add_argument("--name", action="store", type=str, dest="name", 
+                              help="Search Enterprise/Enterprises containing the given name")
+    
+    parser_getcustomers_msp.add_argument("--filters", action="store", type=str, dest="filters",
+                              help="Returns only given filters out of the returned value. Default all values are returned")
+    
+    parser_getcustomers_msp.add_argument("--search", action="store", type=str, dest="search", 
+                              help="Search any data from properties of customers, e.g. search for particular edge")
+
+    parser_getcustomers_msp.add_argument("--rows_name", action="store_true", dest="rows", default=False,
+                              help="Returns only the row names from the output result.")
+
+    parser_getcustomers_msp.set_defaults(dest="msp_customers_get")
+
 
 
     # Update/insert system properties in VCO
@@ -423,7 +454,9 @@ if __name__ == "__main__":
     parser_sysprop_set.set_defaults(dest="sysprop_set")
     
     args = parser.parse_args()
+
     obj = VcoApiExecute(**vars(args))
-    print(obj)
+    if obj.p is not None:
+        print(obj.p)
     #args.func(args)
 
