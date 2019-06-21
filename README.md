@@ -157,13 +157,14 @@ It is best practice to use it after done using different methods with vcoclient.
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 logout
 ```
 
+
 ### Get Edges - Method
 
-To get a list of all or filtered VeloCloud Edges (VCEs) from VCO. One can ``--search`` per value, get only one ``--name`` VCE and ``--filters``only given keys. Each of the methods (``--name``, ``--filters`` or ``--name``), one can use "|" to search for several values (e.g. search for VCE with name Branch1 or Branch2, one can use ``--name="Branch1|Branch2"). This gives one a powerful option to compare and evaluate several VCEs against each other and use those returned values for another workflow. 
+To get a list of all or filtered VeloCloud Edges (VCEs) from VCO. One can ``--search`` per value, get only one ``--name`` VCE and ``--filters``only given keys. Each of the methods (``--name``, ``--filters`` or ``--search``), one can use "|" to find for several values (e.g. to find several VCEs with names Branch1 or Branch2, use ``--name="Branch1|Branch2"). This gives one a powerful option to compare and evaluate several VCEs against each other and use those returned values for another workflow. 
 
 ``--id`` can be used to specify VCEs from specific customer in VCO.
 
-**Please note:** ``--name``, ``--search`` and ``--filters``are all doing a loose search rather then an exact match, meaning you will get more values then maybe requested but you do not need to be very specific for your search. 
+**Please note:** ``--name``, ``--search`` and ``--filters``are all doing a loose search rather then an exact match, meaning you will get more values then maybe requested but you do not need to be very specific for your search. Maybe as a to-do, give different options in the future. 
 
 ```sh
 
@@ -313,7 +314,70 @@ links_3_ipAddress          NaN     10.2.2.2          NaN      NaN
 ```
 
 All those outputs can be then converted into CSV or JSON.
- 
+
+### Get Customers VCEs (as MSP or Operator) - Method
+
+To get a list of all VCEs as a MSP/Partner or as operator one can use ``msp_customers_get`` or ``operator_customers_get``. Same as edges_get method, one can use ``--search``. ``--filters`` and ``--names`` to narrow down the result accordingly.
+
+
+#### Example
+
+The help output for ``msp_customers_get``:
+
+``sh
+
+[iddoc@homeserver:/scripts] ./vcoclient.py msp_customers_get --help
+usage: vcoclient.py msp_customers_get [-h] [--name NAME] [--filters FILTERS]
+                                      [--search SEARCH] [--rows_name]
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --name NAME        Search Enterprise/Enterprises containing the given name
+  --filters FILTERS  Returns only given filters out of the returned value.
+                     Default all values are returned
+  --search SEARCH    Search any data from properties of customers, e.g. search
+                     for particular edge
+  --rows_name        Returns only the row names from the output result.
+
+``
+
+and the help output for ``òperator_custmers_get``:
+
+``sh
+[iddoc@homeserver:/scripts] ./vcoclient.py operator_customers_get --help
+usage: vcoclient.py operator_customers_get [-h] [--name NAME]
+                                           [--filters FILTERS]
+                                           [--search SEARCH] [--rows_name]
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --name NAME        Search Enterprise/Enterprises containing the given name
+  --filters FILTERS  Returns only given filters out of the returned value.
+                     Default all values are returned
+  --search SEARCH    Search any data from properties of customers, e.g. search
+                     for particular edge
+  --rows_name        Returns only the row names from the output result.
+``
+
+Here an example (customer names and account numbers obscured on purpose):
+
+``sh
+./vcoclient.py msp_customers_get --search="*"
+                                                                 POC                         Customer Test  ...                            Customer 5                           Customer 4
+accountNumber                                            XXX-XXX-H86                           XXX-XXX-BKW  ...                           XXX-XXXDGL                           XXX-XXX-4EB
+alertsEnabled                                                      1                                     1  ...                                     1                                     1
+city                                                             NaN                                   NaN  ...                                   NaN                                   NaN
+contactEmail                                                     NaN                                   NaN  ...                                   NaN                                   NaN
+contactMobile                                                    NaN                                   NaN  ...                                   NaN                                   NaN
+contactName                                                      NaN                                   NaN  ...                                   NaN                                   NaN
+contactPhone                                                     NaN                                   NaN  ...                                   NaN                                   NaN
+country                                                          NaN                                   NaN  ...                                   NaN                                   NaN
+created                                     2017-10-09T13:47:29.000Z              2018-02-01T21:56:50.000Z  ...              2019-05-17T18:11:40.000Z              2019-06-20T15:52:27.000Z
+description                                                      NaN                                   NaN  ...                                   NaN                                   NaN
+domain                                                           NaN                                   NaN  ...                                   NaN                                   NaN
+....
+``
+
 ### Set System Properties - Method
 
 System properties of VCO can be changed/added. Only applicable at "operator" mode but needed for on-premiss installation of VCO.
