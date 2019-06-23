@@ -303,6 +303,7 @@ class VcoApiExecute(object):
 
         df = df.T
         df.fillna(value=pd.np.nan, inplace=True)
+        df.dropna(axis='columns', how='all', inplace=True)
 
         if rows:
             df = list(df.index)
