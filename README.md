@@ -324,7 +324,7 @@ To get a list of all VCEs as a MSP/Partner or as operator one can use ``msp_cust
 
 The help output for ``msp_customers_get``:
 
-``sh
+```sh
 
 [iddoc@homeserver:/scripts] ./vcoclient.py msp_customers_get --help
 usage: vcoclient.py msp_customers_get [-h] [--name NAME] [--filters FILTERS]
@@ -339,11 +339,11 @@ optional arguments:
                      for particular edge
   --rows_name        Returns only the row names from the output result.
 
-``
+```
 
 and the help output for ``òperator_custmers_get``:
 
-``sh
+```sh
 [iddoc@homeserver:/scripts] ./vcoclient.py operator_customers_get --help
 usage: vcoclient.py operator_customers_get [-h] [--name NAME]
                                            [--filters FILTERS]
@@ -357,12 +357,12 @@ optional arguments:
   --search SEARCH    Search any data from properties of customers, e.g. search
                      for particular edge
   --rows_name        Returns only the row names from the output result.
-``
+```
 
 Here an example (customer names and account numbers obscured on purpose):
 
-``sh
-./vcoclient.py msp_customers_get --search="*"
+```sh
+[iddoc@homeserver:/scripts] ./vcoclient.py msp_customers_get --search="*"
                                                                  POC                         Customer Test  ...                            Customer 5                           Customer 4
 accountNumber                                            XXX-XXX-H86                           XXX-XXX-BKW  ...                           XXX-XXXDGL                           XXX-XXX-4EB
 alertsEnabled                                                      1                                     1  ...                                     1                                     1
@@ -376,7 +376,7 @@ created                                     2017-10-09T13:47:29.000Z            
 description                                                      NaN                                   NaN  ...                                   NaN                                   NaN
 domain                                                           NaN                                   NaN  ...                                   NaN                                   NaN
 ....
-``
+```
 
 ### Set System Properties - Method
 
