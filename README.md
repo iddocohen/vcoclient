@@ -24,13 +24,11 @@ created                                 2019-04-19T15:48:50.000Z                
 
 It uses argparse and it is functional hooks. Each functional hook, is a mini method to accomplish something. 
 
-## Supported
-
-On Mac OS and Linux
-
 ## Installation
 
-TODO
+``pip3 install vcoclient``
+
+**Please Note:** I have tested it only on Linux and Mac OS based systems, please use it on Windows based on your own risk.  
 
 ## Useage
 ### Global Program Options

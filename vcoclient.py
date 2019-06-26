@@ -87,15 +87,6 @@ config_out_mani  = {
 #pd.set_option('display.max_columns', 100)
 #pd.set_option('display.max_rows', 100)
 
-__author__ = "Iddo Cohen"
-__copyright__ = "Copyright 2019"
-__credits__ = "Iddo Cohen"
-__license__ = "MIT"
-__version__ = "0.0.7"
-__maintainer__ ="Iddo Cohen"
-__email__ = "iddocohen@gmail.com"
-__status__ = "Dev"
-
 class Password(argparse.Action):
     def __call__(self, parser, namespace, values, option_string):
         if values is None:
@@ -244,6 +235,9 @@ class VcoApiExecuteError(Exception):
    pass
 
 class VcoApiExecute(object):
+    """
+    Executing dynmaic RestAPI calls based on the config_ dicts defined. 
+    """
     def __init__(self, **args):
         if "dest" not in args:
             raise VcoApiExecuteError("Dest not defined in argparse object")        
@@ -259,6 +253,9 @@ class VcoApiExecute(object):
         self.__internal_call(**args)
 
     def __internal_call(self, **args):
+        """
+        Uses VcoRequestManager object and associated config_ dicts to execute the APIs.
+        """
         try:
             if self.call:
                 args["method"] = self.url
@@ -269,10 +266,12 @@ class VcoApiExecute(object):
         except Exception as e:
             if type(e).__name__ != "ApiException":
                 raise VcoApiExecuteError(str(e))
-            else:
-                raise e
+            raise e
 
     def format_by_name(self, j, name=None, search=None, filters=None, output=None, rows=None, **args):
+        """
+        Converting JSON into Panda dataframe for filtering/searching given keys/values from that datastructure. 
+        """
         df  = pd.DataFrame.from_dict(json_normalize(j, sep='_'), orient='columns')
         df.rename(index=df.name.to_dict(), inplace=True)
 
@@ -318,6 +317,9 @@ class VcoApiExecute(object):
 
     @staticmethod 
     def __replace_placeholder (dic, **ph):
+        """
+        Recrusively searches and replaces a value under payload config. 
+        """
         def recrusive (x):
             if isinstance (x, dict):
                 return {_: recrusive(x[_]) for _ in x}
@@ -325,8 +327,9 @@ class VcoApiExecute(object):
                 return [recrusive(_) for _ in x]
             elif isinstance(x, str):
                 r = x % ph
+                # Very risky assumption, the payload does not need to be type int also if we are able to cast it to be int
                 try: 
-                    r = int(r)
+                    r = int(r) 
                 except:
                     pass
                 return r
@@ -336,6 +339,9 @@ class VcoApiExecute(object):
 
     @staticmethod
     def __search_value(y, z):
+        """
+        Recrusively searches through dict to find given values seperated by |
+        """
         def rsearch(x, s, p=''):
             if isinstance(x, dict):
                 for _ in x:
@@ -456,8 +462,10 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    obj = VcoApiExecute(**vars(args))
-    if obj.p is not None:
-        print(obj.p)
-    #args.func(args)
+    if "dest" not in args:
+        parser.print_help(sys.stderr)
+    else:
+        obj = VcoApiExecute(**vars(args))
+        if obj.p is not None:
+            print(obj.p)
 

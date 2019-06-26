@@ -2,9 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.7] - 2019-06
+## [0.1.1] - 2019-06
+### Changed:
+- Fixing bug in setup.py
+- Printing out help if no method used in vcoclient.py
+
+## [0.1] - 2019-06
 ### Added:
-- 
+- Installation support now via pip3 install vcoclient
+### Changed:
+- Documentation in vcoclient.py, README and Changelog
+
+## [0.0.7] - 2019-06
 ### Changed:
 - There is now a ``msp_customers_get``and a ``operator_cusgtomers_get`` to support operator or partner customers respectively. Thereby ``customers_get``has been removed
 - Better error handling for exceptions in execusion class.
