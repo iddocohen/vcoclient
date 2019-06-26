@@ -3,3 +3,6 @@
 *.pyc
 venv/
 workflow_dev/
+build/
+dist/
+vcoclient.egg-info/
