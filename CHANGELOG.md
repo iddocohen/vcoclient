@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2019-06
+### Changed:
+- Fixing bug in logout
+
 ## [0.1.1] - 2019-06
 ### Changed:
 - Fixing bug in setup.py
