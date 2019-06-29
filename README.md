@@ -30,6 +30,39 @@ It uses argparse and it is functional hooks. Each functional hook, is a mini met
 
 **Please Note:** I have tested it only on Linux and Mac OS based systems, please use it on Windows based on your own risk.  
 
+## Status
+
+<table>
+    <tr>
+        <td>License</td>
+        <td><img src='https://img.shields.io/pypi/l/vcoclient.svg'></td>
+        <td>Version</td>
+        <td><img src='https://img.shields.io/pypi/v/vcoclient.svg'></td>
+    </tr>
+    <tr>
+        <td>Travis CI</td>
+        <td><img src='https://travis-ci.org/iddocohen/vcoclient.svg?branch=master'></td>
+        <td>Coverage</td>
+        <td><img src='https://codecov.io/gh/iddocohen/vcoclient/branch/master/graph/badge.svg'></td>
+    </tr>
+    <tr>
+        <td>Wheel</td>
+        <td><img src='https://img.shields.io/pypi/wheel/vcoclient.svg'></td>
+        <td>Implementation</td>
+        <td><img src='https://img.shields.io/pypi/implementation/vcoclient.svg'></td>
+    </tr>
+    <tr>
+        <td>Status</td>
+        <td><img src='https://img.shields.io/pypi/status/vcoclient.svg'></td>
+        <td>Downloads</td>
+        <td><img src='https://img.shields.io/pypi/dm/vcoclient.svg'></td>
+    </tr>
+    <tr>
+        <td>Supported versions</td>
+        <td><img src='https://img.shields.io/pypi/pyversions/vcoclient.svg'></td>
+    </tr>
+</table>
+
 ## Useage
 ### Global Program Options
 
