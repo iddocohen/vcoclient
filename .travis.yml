@@ -6,7 +6,6 @@ python:
 before_install:
     - sudo apt-get update
     - sudo apt-get install python3
-    - curl -L https://github.com/iddocohen/vcoclient/tarball/master | tar xz
 
 install:
     - python3 setup.py install 
