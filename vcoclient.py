@@ -142,15 +142,16 @@ class VcoRequestManager(object):
                                allow_redirects=True, verify=self._verify_ssl)
 
         if r.status_code == 200:
-            if "velocloud.message" in self._session.cookies:
-                if "Invalid" in self._session.cookies["velocloud.message"]:
-                    raise ApiException(self._session.cookies["velocloud.message"].replace("%20", " "))
-
-            if "velocloud.session" not in self._session.cookies:
-                raise ApiException("Cookie not received by server - something is very wrong")
-
             if not logout:
+                if "velocloud.message" in self._session.cookies:
+                    if "Invalid" in self._session.cookies["velocloud.message"]:
+                        raise ApiException(self._session.cookies["velocloud.message"].replace("%20", " "))
+
+                if "velocloud.session" not in self._session.cookies:
+                    raise ApiException("Cookie not received by server - something is very wrong")
+
                 self._save_cookie()
+
             else:
                 self._del_cookie()
         else:
