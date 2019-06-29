@@ -13,7 +13,7 @@ with open("requirements.txt", "r") as f:
 
 setuptools.setup(
      name='vcoclient',  
-     version='0.1.1',
+     version='0.1.2',
      scripts=['vcoclient.py'] ,
      author="Iddo Cohen",
      author_email="iddocohen@gmail.com",
