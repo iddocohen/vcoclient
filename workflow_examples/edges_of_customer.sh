@@ -9,14 +9,14 @@
 RET=$(vcoclient.py login --no-operator)
 
 if [ $? -eq 1 ]; then
-    echo "Login was not successful"
+    echo $RET
     exit
 fi
 
-# Trying to get any random customer from VCO to get its edges 
+# Trying to get any random customer for MSP from VCO
 ID=$(vcoclient.py --output=json msp_customers_get | jq '.[].id' | shuf | head -n 1 )
 if [ $? -eq 1 ] && [ ${#ID} > 0 ]; then
-    echo "Cannot get any customer from VCO"
+    echo $ID
     exit
 fi
 
