@@ -1,31 +1,28 @@
 #!/bin/bash
 
-# CDing to the the directory where vcoclient is. In this case just one directory back.
-cd ..
-
-# Storing the Name we should search
-NAME=$1 
+# Uncomment this line to export right VCO_HOST, VCO_USER and VCO_PASS
+#export VCO_HOST=""
+#export VCO_USER=""
+#export VCO_PASS=""
 
 # Trying to login to current VCO
-RET=$(./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password=vcadm\!n)
+RET=$(vcoclient.py login --no-operator)
 
 if [ $? -eq 1 ]; then
     echo "Login was not successful"
     exit
 fi
 
-# Searching for customer name "ACME" and storing the id returned by JSON in a variable in bash
-ID=$(./vcoclient.py --vco=192.168.2.55 --output=json customers_get --name=$NAME --filter=id | jq -r ".[].id")
-
-# Check we found customer "ACME" and got an ID from VCO
-if [ -z $ID ]; then
-    echo "We could not find an id"
+# Trying to get any random customer from VCO to get its edges 
+ID=$(vcoclient.py --output=json msp_customers_get | jq '.[].id' | shuf | head -n 1 )
+if [ $? -eq 1 ] && [ ${#ID} > 0 ]; then
+    echo "Cannot get any customer from VCO"
     exit
 fi
 
-# Executing the edges_get method
+# Executing the edges_get method 
 
-RET=$(./vcoclient.py --vco=192.168.2.55 --output=csv edges_get --id=$ID)
+RET=$(vcoclient.py --output=csv edges_get --search=* --filters=interface --id=$ID)
 
 # Checking that we do not have an error
 
@@ -35,9 +32,9 @@ else
     echo $RET
 fi
 
-# Execute the login method 
+# Execute the logout method 
 
-RET=$(./vcoclient.py --vco=192.168.2.55 logout)
+RET=$(vcoclient.py logout)
 
 # Checking that we can logout correctly
 
