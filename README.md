@@ -5,7 +5,7 @@ A simple VeloCloud Orchestrator (VCO) Python client
 The idea is to embrace the Linux methodology and to have one VCO client that can be used within a complex workflow under Linux.
 
 ```sh
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@domain.com --password
 Password: 
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get
 
@@ -159,18 +159,18 @@ optional arguments:
 
 Either use the  unsecure method to provide a password:
 ```sh
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password=VeloCloud123
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@domain.com --password=VeloCloud123
 [iddoc@homeserver:/scripts]
 ```
 or use the more secure method to provide it:
 ```sh
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@domain.com --password
 Password:
 [iddoc@homeserver:/scripts]
 ```
 or use VCO_USER and/or VCO_PASS environment variables to pass no login information to the script itself:
 ```sh
-[iddoc@homeserver:/scripts] export VCO_USER="super@velocloud.net"
+[iddoc@homeserver:/scripts] export VCO_USER="super@domain.com"
 [iddoc@homeserver:/scripts] export VCO_PASS="SuperSecretPassword"
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login
 [iddoc@homeserver:/scripts]
