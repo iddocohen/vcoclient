@@ -67,32 +67,32 @@ To influence program behaviour and avoiding using ``--``options, one can use glo
         <td>Default Value</td>
     </tr>
     <tr>
-        <td>``VCO_HOST``</td>
-        <td>``export VCO_HOST="vco.domain.net"``</td>
-        <td>``vcoclient.py --vco="vco.domain.net"``</td>
+        <td>VCO_HOST</td>
+        <td>export VCO_HOST="vco.domain.net"</td>
+        <td>vcoclient.py --vco="vco.domain.net"</td>
         <td>None</td>
     </tr>
     <tr>
-        <td>``VCO_USER``</td>
-        <td>``export VCO_USER="my_username@domain.net"``</td>
-        <td>``vcoclient.py login username="my_username@domain.net"``</td>
+        <td>VCO_USER</td>
+        <td>export VCO_USER="my_username@domain.net"</td>
+        <td>vcoclient.py login username="my_username@domain.net"</td>
         <td>None</td>
     </tr>
     <tr>
-        <td>``VCO_PASS``</td>
-        <td>``export VCO_PASS="MySuperSecretPassword"``</td>
-        <td>``vcoclient.py login username="MySuperSecretPassword"``</td>
+        <td>VCO_PASS</td>
+        <td>export VCO_PASS="MySuperSecretPassword"</td>
+        <td>vcoclient.py login username="MySuperSecretPassword"</td>
         <td>None</td>
     </tr>
     <tr>
-        <td>``VCO_COOKIE_PATH``</td>
-        <td>``export VCO_COOKIE_PATH="/path/where/I/save/cookies/"``</td>
+        <td>VCO_COOKIE_PATH</td>
+        <td>export VCO_COOKIE_PATH="/path/where/I/save/cookies/"</td>
         <td>None (yet)</td>
         <td>/tmp/</td>
     </tr>
     <tr>
-        <td>``VCO_VERIFY_SSL``</td>
-        <td>``export VCO_VERIFY_SSL="TRUE"``</td>
+        <td>VCO_VERIFY_SSL</td>
+        <td>export VCO_VERIFY_SSL="TRUE"</td>
         <td>None (yet)</td>
         <td>False</td>
     </tr>

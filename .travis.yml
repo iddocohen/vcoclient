@@ -12,8 +12,6 @@ install:
   - python3 setup.py install
 script:
   - bash workflow_examples/edges_of_customer.sh
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
 deploy:
   provider: pypi
   user: iddocohen
