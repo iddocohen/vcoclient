@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4] - 2019-07
+## Change:
+- Fixing bug in setup.py
+
 ## [0.1.3] - 2019-07
 ### Added:
 - new method for ``edge_get_lm`` which gets the link_metric of a given edge for a given enterprise.
