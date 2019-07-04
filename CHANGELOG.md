@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2019-07
+### Added:
+- new method for ``edge_get_lm`` which gets the link_metric of a given edge for a given enterprise.
+- Added more description to given methods in argparse.
+- Added envionment variables for verifying SSL (VCO_VERIFY_SSL) and cookie path (VCO_COOKIE_PATH)
+### Changed:
+- Fixing API payload extraction 
+- Fixing error handling when method is not defined
+- Making setup.py more reliable e.g. installing not from directory itself
+
 ## [0.1.2] - 2019-06
 ### Changed:
 - Fixing bug in logout
@@ -31,6 +41,7 @@ All notable changes to this project will be documented in this file.
 ### Removed:
 - Fixed warning issue with Pandas renaming syntax of index
 - Removed memory footprint of variables
+
 ## [0.0.5] - 2019-06
 ### Added:
 - Using getpass for ``--password`` to make it more secure.
@@ -57,6 +68,7 @@ All notable changes to this project will be documented in this file.
 ## [0.0.2] - 2019-05
 ### Added:
 - README, Licences, and fixes bugs in vcoclient.py
+
 ## [0.0.1] - 2019-05
 - First versions
 

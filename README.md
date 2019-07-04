@@ -42,28 +42,62 @@ It uses argparse and it is functional hooks. Each functional hook, is a mini met
     <tr>
         <td>Travis CI</td>
         <td><img src='https://travis-ci.org/iddocohen/vcoclient.svg?branch=master'></td>
-        <td>Coverage</td>
-        <td><img src='https://codecov.io/gh/iddocohen/vcoclient/branch/master/graph/badge.svg'></td>
-    </tr>
-    <tr>
-        <td>Wheel</td>
-        <td><img src='https://img.shields.io/pypi/wheel/vcoclient.svg'></td>
-        <td>Implementation</td>
-        <td><img src='https://img.shields.io/pypi/implementation/vcoclient.svg'></td>
-    </tr>
-    <tr>
-        <td>Status</td>
-        <td><img src='https://img.shields.io/pypi/status/vcoclient.svg'></td>
         <td>Downloads</td>
         <td><img src='https://img.shields.io/pypi/dm/vcoclient.svg'></td>
     </tr>
     <tr>
+        <td>Wheel</td>
+        <td><img src='https://img.shields.io/pypi/wheel/vcoclient.svg'></td>
         <td>Supported versions</td>
         <td><img src='https://img.shields.io/pypi/pyversions/vcoclient.svg'></td>
     </tr>
 </table>
 
 ## Useage
+
+### Global Environment Variables
+
+To influence program behaviour and avoiding using ``--``options, one can use global environment variables, for some of the options:
+
+<table>
+    <tr>
+        <td>Name</td>
+        <td>Example Usage</td>
+        <td>Same as Using</td>
+        <td>Default Value</td>
+    </tr>
+    <tr>
+        <td>``VCO_HOST``</td>
+        <td>``export VCO_HOST="vco.domain.net"``</td>
+        <td>``vcoclient.py --vco="vco.domain.net"``</td>
+        <td>None</td>
+    </tr>
+    <tr>
+        <td>``VCO_USER``</td>
+        <td>``export VCO_USER="my_username@domain.net"``</td>
+        <td>``vcoclient.py login username="my_username@domain.net"``</td>
+        <td>None</td>
+    </tr>
+    <tr>
+        <td>``VCO_PASS``</td>
+        <td>``export VCO_PASS="MySuperSecretPassword"``</td>
+        <td>``vcoclient.py login username="MySuperSecretPassword"``</td>
+        <td>None</td>
+    </tr>
+    <tr>
+        <td>``VCO_COOKIE_PATH``</td>
+        <td>``export VCO_COOKIE_PATH="/path/where/I/save/cookies/"``</td>
+        <td>None (yet)</td>
+        <td>/tmp/</td>
+    </tr>
+    <tr>
+        <td>``VCO_VERIFY_SSL``</td>
+        <td>``export VCO_VERIFY_SSL="TRUE"``</td>
+        <td>None (yet)</td>
+        <td>False</td>
+    </tr>
+</table> 
+
 ### Global Program Options
 
 ```sh

@@ -8,7 +8,7 @@ This program is a simple VeloCloud Orchestrator (VCO) Python client
 The idea is to embrace the Linux methodology and to have a VCO client that can be used within a complex workflow under Linux. For example:
 
 ```sh
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@velocloud.net --password
+[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@domain.com --password
 Password:
 [iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get
 
@@ -41,6 +41,9 @@ import argparse
 import os
 import sys
 import getpass
+import ast
+import time
+import datetime
 
 # Specific Libs
 import pandas as pd
@@ -49,24 +52,24 @@ from pandas.io.json import json_normalize
 # Specific imports
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-# Global Variables
-
-VERIFY_SSL=False
-
 config_api_url = {
     "login"                  :    "",
     "logout"                 :    "",
     "operator_customers_get" :    "network/getNetworkEnterprises",
     "msp_customers_get"      :    "enterpriseProxy/getEnterpriseProxyEnterprises",
+    "edge_get_lm"            :    "metrics/getEdgeLinkMetrics",
+    "gateway_get_edges"      :    "gateway/getGatewayEdgeAssignments",
     "sysprop_set"            :    "systemProperty/insertOrUpdateSystemProperty",
     "edges_get"              :    "enterprise/getEnterpriseEdges",
     "default"                :    ""
 }
 config_api_param   = {
-    "edges_get"              :    { "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": "%(id)s" },    
-    "operator_customers_get" :    { "with":["edges"], "networkId": 1},
-    "msp_customers_get"      :    { "with":["edges"]},
-    "sysprop_set"            :    { "name": "%(name)s", "value": "%(value)s"},
+    "edges_get"              :    '{ "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": %(id)i }',    
+    "operator_customers_get" :    '{ "with":["edges"], "networkId": 1}',
+    "msp_customers_get"      :    '{ "with":["edges"]}',
+    "edge_get_lm"            :    '{ "edgeId": %(edgeid)i, "enterpriseId": %(enterpriseid)i, "interval": { "end": "%(endtime)s", "start": "%(starttime)s"}, "metrics": ["bytesRx", "bytesTx", "totalBytes", "totalPackets", "p1BytesRx", "p1BytesTx", "p1PacketsRx", "p1PacketsTx", "p2BytesRx", "p2BytesTx", "p2PacketsRx", "p2PacketsTx", "p3BytesRx", "p3BytesTx", "p3PacketsRx", "p3PacketsTx", "packetsRx", "packetsTx", "controlBytesRx", "controlBytesTx", "controlPacketsRx", "controlPacketsTx", "bestBwKbpsRx", "bestBwKbpsTx", "bestJitterMsRx", "bestJitterMsTx", "bestLatencyMsRx", "bestLatencyMsTx", "bestLossPctRx", "bestLossPctTx", "bpsOfBestPathRx", "bpsOfBestPathTx", "signalStrength", "scoreTx", "scoreRx"]}',
+    "gateway_get_edges"      :    '{ "gatewayId": %{gatewayid}i }',
+    "sysprop_set"            :    '{ "name": "%(name)s", "value": "%(value)s"}',
     "default"                :    None
 }
 config_api_call  = {
@@ -100,7 +103,7 @@ class ApiException(Exception):
 class VcoRequestManager(object):
 
     #TODO: Give path outside here for the user to alter
-    def __init__(self, hostname, verify_ssl=VERIFY_SSL, path="/tmp/"):
+    def __init__(self, hostname, verify_ssl=os.getenv('VCO_VERIFY_SSL', False), path=os.getenv('VCO_COOKIE_PATH', "/tmp/")):
         """
         Init the Class
         """
@@ -168,7 +171,7 @@ class VcoRequestManager(object):
                 raise ApiException("Cannot load session cookie") 
 
         if not method:
-            raise ApiExeception("No Api Method defined")        
+            raise ApiException("No Api Method defined")        
 
         self._seqno += 1
         headers = { "Content-Type": "application/json" }
@@ -319,24 +322,21 @@ class VcoApiExecute(object):
     @staticmethod 
     def __replace_placeholder (dic, **ph):
         """
-        Recrusively searches and replaces a value under payload config. 
+        Searches and replaces a value under payload config. 
         """
-        def recrusive (x):
-            if isinstance (x, dict):
-                return {_: recrusive(x[_]) for _ in x}
-            elif isinstance(x, list):
-                return [recrusive(_) for _ in x]
-            elif isinstance(x, str):
+        def string_sub(x):
+            try:
                 r = x % ph
-                # Very risky assumption, the payload does not need to be type int also if we are able to cast it to be int
-                try: 
-                    r = int(r) 
-                except:
-                    pass
-                return r
-            else:
-                return x    
-        return recrusive(dic)
+                d = ast.literal_eval(r)
+            except Exception as e:
+                raise VcoApiExecuteError(str(e))
+            
+            if not isinstance(d, dict):
+                raise VcoApiExecuteError("Payload is not type dict")
+            return d 
+        if dic is None:
+            return {}
+        return string_sub(dic)
 
     @staticmethod
     def __search_value(y, z):
@@ -360,7 +360,16 @@ class VcoApiExecute(object):
                 yield p[:-1], x
         return rsearch(y, z)
 
-
+def valid_datetime_type(arg_datetime_str):
+    """custom argparse type for user datetime values given from the command line"""
+    try:
+        return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d %H:%M")
+    except ValueError:
+        try:
+            return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d")
+        except ValueError:
+            msg = "Given Datetime ({0}) not valid! Expected format, 'YYYY-MM-DD HH:mm' or 'YYYY-MM-DD'!".format(arg_datetime_str)
+            raise argparse.ArgumentTypeError(msg)  
 
 if __name__ == "__main__":
     """
@@ -395,7 +404,7 @@ if __name__ == "__main__":
 
 
     # Get all Edges
-    parser_getedges = subparsers.add_parser("edges_get")
+    parser_getedges = subparsers.add_parser("edges_get", description="Get basic information for all/some VCEs.")
     
     parser_getedges.add_argument("--name", action="store", type=str, dest="name", 
                               help="Search Edge/Edges containing the given name")
@@ -413,6 +422,33 @@ if __name__ == "__main__":
                               help="Returns only the row names from the output result.")
 
     parser_getedges.set_defaults(dest="edges_get")
+
+    # Get link metric per Edge
+    parser_getedgelm = subparsers.add_parser("edge_get_lm", description="Collect link statistics for a VCE between a given period.")
+    
+    parser_getedgelm.add_argument("--filters", action="store", type=str, dest="filters",
+                              help="Returns only given filters out of the returned value. Default all values are returned")
+
+    parser_getedgelm.add_argument("--search", action="store", type=str, dest="search", 
+                              help="Search for the metric value")
+    
+    parser_getedgelm.add_argument("--edgeid", action="store", type=int, dest="edgeid", required=True,
+                              help="Get information for that specific Edge. Edgeid can be found under edges_get method under id.")
+
+    parser_getedgelm.add_argument("--enterpriseid", action="store", type=int, dest="enterpriseid", default=0,
+                              help="Get information for that specific Edge in that specific customer. EnterpriseId can be either found from *_customers_get method under id or edges_get method under enterpriseId.")
+
+    parser_getedgelm.add_argument("--starttime", action="store", type=valid_datetime_type, dest="starttime", required=True,
+                              help="The start time from when one wants to get the data. Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM.")
+    
+    parser_getedgelm.add_argument("--endtime", action="store", type=valid_datetime_type, dest="endtime", default=datetime.date.today(),
+                              help="The end time from when one wants to get the data. Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM. End time is default to time now.")
+
+    parser_getedgelm.add_argument("--rows_name", action="store_true", dest="rows", default=False,
+                              help="Returns only the row names from the output result.")
+
+    parser_getedgelm.set_defaults(dest="edge_get_lm")
+
 
     # Get all Customers as operator
     parser_getcustomers_operator = subparsers.add_parser("operator_customers_get")
@@ -449,6 +485,10 @@ if __name__ == "__main__":
     parser_getcustomers_msp.set_defaults(dest="msp_customers_get")
 
 
+    # TODO: Think about supporting gateway_get_edges in the future
+    #parser_getgatewayedges = subparsers.add_parser("gateway_get_edges")
+    #parser_getgatewayedges.add_argument(
+    #parser_getgatewayedges.set_defaults(dest="gateway_get_edges")
 
     # Update/insert system properties in VCO
     parser_sysprop_set = subparsers.add_parser("sysprop_set")

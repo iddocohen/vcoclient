@@ -1,19 +1,18 @@
-import setuptools
-import sys
+from setuptools import setup, find_packages
+from os import path
+from io import open
 
-if sys.version_info.major < 3:
-    print("vcoclient.py is only supported for python 3, please upgrade")
-    sys.exit(1)
+here = path.abspath(path.dirname(__file__))
 
-with open("README.md", "r") as f:
+with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-with open("requirements.txt", "r") as f:
+with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
     requirements = f.read().splitlines()
 
-setuptools.setup(
+setup(
      name='vcoclient',  
-     version='0.1.2',
+     version='0.1.3',
      scripts=['vcoclient.py'] ,
      author="Iddo Cohen",
      author_email="iddocohen@gmail.com",
@@ -21,10 +20,12 @@ setuptools.setup(
      long_description=long_description,
      long_description_content_type="text/markdown",
      url="https://github.com/iddocohen/vcoclient",
-     packages=setuptools.find_packages(),
+     packages=find_packages(),
+     python_requires=">=3.6",
      install_requires=requirements,
      classifiers=[
-         "Programming Language :: Python :: 3",
+         "Programming Language :: Python :: 3.6",
+         "Programming Language :: Python :: 3.7",
          "License :: OSI Approved :: MIT License",
          "Operating System :: OS Independent",
      ],
