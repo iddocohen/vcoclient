@@ -25,15 +25,12 @@ fi
 RET=$(vcoclient.py --output=csv edges_get --search=* --filters=interface --id=$ID)
 
 # Checking that we do not have an error
-
+echo $RET
 if [ $? -eq 1 ]; then
     exit 1
-else
-    echo $RET
 fi
 
 # Execute the logout method 
-
 RET=$(vcoclient.py logout)
 
 # Checking that we can logout correctly
