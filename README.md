@@ -75,13 +75,13 @@ To influence program behaviour and avoiding using ``--``options, one can use glo
     <tr>
         <td>VCO_USER</td>
         <td>export VCO_USER="my_username@domain.net"</td>
-        <td>vcoclient.py login username="my_username@domain.net"</td>
+        <td>vcoclient.py login --username="my_username@domain.net"</td>
         <td>None</td>
     </tr>
     <tr>
         <td>VCO_PASS</td>
         <td>export VCO_PASS="MySuperSecretPassword"</td>
-        <td>vcoclient.py login username="MySuperSecretPassword"</td>
+        <td>vcoclient.py login --password="MySuperSecretPassword"</td>
         <td>None</td>
     </tr>
     <tr>
