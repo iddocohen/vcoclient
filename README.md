@@ -1,4 +1,4 @@
-# vcoclient.py (version 0.1.5) 
+# vcoclient.py (version 0.1.6) 
 
 A simple VeloCloud Orchestrator (VCO) Python client
 

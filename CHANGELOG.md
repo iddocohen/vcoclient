@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.5] - 2019-08
+## [0.1.6] - 2019-08
 ### Added:
 - gateway_get_edges is a new method which gets the edges behind a given gateway
 - enterprise_get_gateway is a new method which gets the gateways behind edges 
