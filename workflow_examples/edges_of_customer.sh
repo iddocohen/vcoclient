@@ -22,7 +22,7 @@ fi
 
 # Executing the edges_get method 
 
-RET=$(vcoclient.py --output=csv edges_get --search=* --filters=interface --id=$ID)
+RET=$(vcoclient.py --output=csv edges_get --search=* --filters=interface --enterpriseid=$ID)
 
 # Checking that we do not have an error
 echo $RET
