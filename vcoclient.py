@@ -2,33 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """ Description:
-
 This program is a simple VeloCloud Orchestrator (VCO) Python client
 
-The idea is to embrace the Linux methodology and to have a VCO client that can be used within a complex workflow under Linux. For example:
+The idea is to embrace the Linux methodology and to have a VCO client that can be used within a complex workflow under Linux.
 
-```sh
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 login --username=super@domain.com --password
-Password:
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 edges_get
-
-                                                         Branch1                                   Branch2                                   Branch3                                   Branch4
-activationKey                                HS7S-QKPA-ZZCC-PG74                       LHH3-8B4R-7XVJ-6J3V                       JTWH-EHNW-7LUG-YQ9T                       YZ8U-CKTY-8MTL-FP4R
-activationKeyExpires                    2019-05-28T11:53:33.000Z                  2019-05-19T16:58:53.000Z                  2019-06-01T10:32:39.000Z                  2019-06-01T16:10:54.000Z
-activationState                                        ACTIVATED                                 ACTIVATED                                 ACTIVATED                                 ACTIVATED
-activationTime                          2019-04-28T11:55:38.000Z                  2019-04-19T17:17:51.000Z                  2019-05-02T10:55:10.000Z                  2019-05-02T19:18:20.000Z
-alertsEnabled                                                  1                                         1                                         1                                         1
-buildNumber                                     R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA
-created                                 2019-04-19T15:48:50.000Z                  2019-04-19T16:58:53.000Z                  2019-05-02T10:32:39.000Z                  2019-05-02T16:10:54.000Z
-...                                     ...                                       ...                                       ...                                       ...
-
-[iddoc@homeserver:/scripts] ./vcoclient.py --vco=192.168.2.55 logout
-```
-
-It uses argparse and it is functional hooks. Each functional hook, is a mini method to accomplish something.
-
-Under https://github.com/iddocohen/vcoclient one can read methods implemented.
-
+For more visit: https://github.com/iddocohen/vcoclient
 """
 
 
@@ -55,20 +33,22 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 config_api_url = {
     "login"                  :    "",
     "logout"                 :    "",
-    "operator_customers_get" :    "network/getNetworkEnterprises",
-    "msp_customers_get"      :    "enterpriseProxy/getEnterpriseProxyEnterprises",
-    "edge_get_lm"            :    "metrics/getEdgeLinkMetrics",
-    "gateway_get_edges"      :    "gateway/getGatewayEdgeAssignments",
-    "sysprop_set"            :    "systemProperty/insertOrUpdateSystemProperty",
     "edges_get"              :    "enterprise/getEnterpriseEdges",
+    "edge_get_lm"            :    "metrics/getEdgeLinkMetrics",
+    "enterprise_get_gateway" :    "enterprise/getEnterpriseAddresses",
+    "gateway_get_edges"      :    "gateway/getGatewayEdgeAssignments",
+    "msp_customers_get"      :    "enterpriseProxy/getEnterpriseProxyEnterprises",
+    "operator_customers_get" :    "network/getNetworkEnterprises",
+    "sysprop_set"            :    "systemProperty/insertOrUpdateSystemProperty",
     "default"                :    ""
 }
 config_api_param   = {
-    "edges_get"              :    '{ "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": %(id)i }',    
+    "edges_get"              :    '{ "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": %(enterpriseid)i }',    
+    "edge_get_lm"            :    '{ "edgeId": %(edgeid)i, "enterpriseId": %(enterpriseid)i, "interval": { "end": %(endtime)i, "start": %(starttime)i}, "metrics": ["bytesRx", "bytesTx", "totalBytes", "totalPackets", "p1BytesRx", "p1BytesTx", "p1PacketsRx", "p1PacketsTx", "p2BytesRx", "p2BytesTx", "p2PacketsRx", "p2PacketsTx", "p3BytesRx", "p3BytesTx", "p3PacketsRx", "p3PacketsTx", "packetsRx", "packetsTx", "controlBytesRx", "controlBytesTx", "controlPacketsRx", "controlPacketsTx", "bestBwKbpsRx", "bestBwKbpsTx", "bestJitterMsRx", "bestJitterMsTx", "bestLatencyMsRx", "bestLatencyMsTx", "bestLossPctRx", "bestLossPctTx", "bpsOfBestPathRx", "bpsOfBestPathTx", "signalStrength", "scoreTx", "scoreRx"]}',
+    "enterprise_get_gateway" :    '{ "enterpriseId": %(enterpriseid)i }',
+    "gateway_get_edges"      :    '{ "gatewayId": %(gatewayid)i }',
     "operator_customers_get" :    '{ "with":["edges"], "networkId": 1}',
     "msp_customers_get"      :    '{ "with":["edges"]}',
-    "edge_get_lm"            :    '{ "edgeId": %(edgeid)i, "enterpriseId": %(enterpriseid)i, "interval": { "end": "%(endtime)s", "start": "%(starttime)s"}, "metrics": ["bytesRx", "bytesTx", "totalBytes", "totalPackets", "p1BytesRx", "p1BytesTx", "p1PacketsRx", "p1PacketsTx", "p2BytesRx", "p2BytesTx", "p2PacketsRx", "p2PacketsTx", "p3BytesRx", "p3BytesTx", "p3PacketsRx", "p3PacketsTx", "packetsRx", "packetsTx", "controlBytesRx", "controlBytesTx", "controlPacketsRx", "controlPacketsTx", "bestBwKbpsRx", "bestBwKbpsTx", "bestJitterMsRx", "bestJitterMsTx", "bestLatencyMsRx", "bestLatencyMsTx", "bestLossPctRx", "bestLossPctTx", "bpsOfBestPathRx", "bpsOfBestPathTx", "signalStrength", "scoreTx", "scoreRx"]}',
-    "gateway_get_edges"      :    '{ "gatewayId": %{gatewayid}i }',
     "sysprop_set"            :    '{ "name": "%(name)s", "value": "%(value)s"}',
     "default"                :    None
 }
@@ -180,6 +160,8 @@ class VcoRequestManager(object):
                     "id": self._seqno,
                     "method": method,
                     "params": params }
+
+        #print(payload)
 
         if method in ("liveMode/readLiveData", "liveMode/requestLiveActions", "liveMode/clientExitLiveMode"):
             url = self._livepull_url
@@ -362,11 +344,19 @@ class VcoApiExecute(object):
 
 def valid_datetime_type(arg_datetime_str):
     """custom argparse type for user datetime values given from the command line"""
+    epoch = datetime.datetime.utcfromtimestamp(0)
+    def unix_time_millis(dt):
+        return int((dt - epoch).total_seconds() * 1000)
+
     try:
-        return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d %H:%M")
+        return unix_time_millis(datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d %H:%M"))
+        #return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d %H:%M").isoformat()
+        #return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d %H:%M")
     except ValueError:
         try:
-            return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d")
+            return unix_time_millis(datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d"))
+            #return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d").isoformat()
+            #return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d")
         except ValueError:
             msg = "Given Datetime ({0}) not valid! Expected format, 'YYYY-MM-DD HH:mm' or 'YYYY-MM-DD'!".format(arg_datetime_str)
             raise argparse.ArgumentTypeError(msg)  
@@ -415,7 +405,7 @@ if __name__ == "__main__":
     parser_getedges.add_argument("--search", action="store", type=str, dest="search", 
                               help="Search any data from properties of Edges, e.g. search for USB interfaces")
     
-    parser_getedges.add_argument("--id", action="store", type=int, dest="id", default=1,
+    parser_getedges.add_argument("--enterpriseid", action="store", type=int, dest="enterpriseid", default=1,
                               help="Returns the Edges of only that given enterprise. Default all Edges of all enterprises at operator view or all Edges of an enterprise at customer view are returned.")
 
     parser_getedges.add_argument("--rows_name", action="store_true", dest="rows", default=False,
@@ -441,7 +431,7 @@ if __name__ == "__main__":
     parser_getedgelm.add_argument("--starttime", action="store", type=valid_datetime_type, dest="starttime", required=True,
                               help="The start time from when one wants to get the data. Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM.")
     
-    parser_getedgelm.add_argument("--endtime", action="store", type=valid_datetime_type, dest="endtime", default=datetime.date.today(),
+    parser_getedgelm.add_argument("--endtime", action="store", type=valid_datetime_type, dest="endtime", default=valid_datetime_type(str(datetime.date.today())),
                               help="The end time from when one wants to get the data. Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM. End time is default to time now.")
 
     parser_getedgelm.add_argument("--rows_name", action="store_true", dest="rows", default=False,
@@ -485,10 +475,42 @@ if __name__ == "__main__":
     parser_getcustomers_msp.set_defaults(dest="msp_customers_get")
 
 
-    # TODO: Think about supporting gateway_get_edges in the future
-    #parser_getgatewayedges = subparsers.add_parser("gateway_get_edges")
-    #parser_getgatewayedges.add_argument(
-    #parser_getgatewayedges.set_defaults(dest="gateway_get_edges")
+    # Get edges behind a gateway
+    parser_getgatewayedges = subparsers.add_parser("gateway_get_edges")
+    parser_getgatewayedges.add_argument("--gatewayid", action="store", type=int, dest="gatewayid", required=True,
+                              help="Get edges associated to a gateway")
+
+    parser_getgatewayedges.add_argument("--name", action="store", type=str, dest="name", 
+                              help="Search for a given column name")
+    parser_getgatewayedges.add_argument("--filters", action="store", type=str, dest="filters",
+                              help="Returns only given filters out of the returned value. Default all values are returned")
+    
+    parser_getgatewayedges.add_argument("--search", action="store", type=str, dest="search", 
+                              help="Search any data from properties of customers, e.g. search for particular edge")
+
+    parser_getgatewayedges.add_argument("--rows_name", action="store_true", dest="rows", default=False,
+                              help="Returns only the row names from the output result.")
+
+    parser_getgatewayedges.set_defaults(dest="gateway_get_edges")
+
+    # Get gateways behind enterprise
+    parser_getgatewayent = subparsers.add_parser("enterprise_get_gateway")
+    parser_getgatewayent.add_argument("--enterpriseid", action="store", type=int, dest="enterpriseid", required=True,
+                              help="Get gateways associated to an enterprise")
+
+    parser_getgatewayent.add_argument("--name", action="store", type=str, dest="name", 
+                              help="Search for a given column name")
+    parser_getgatewayent.add_argument("--filters", action="store", type=str, dest="filters",
+                              help="Returns only given filters out of the returned value. Default all values are returned")
+    
+    parser_getgatewayent.add_argument("--search", action="store", type=str, dest="search", 
+                              help="Search any data from properties of customers, e.g. search for particular edge")
+
+    parser_getgatewayent.add_argument("--rows_name", action="store_true", dest="rows", default=False,
+                              help="Returns only the row names from the output result.")
+
+    parser_getgatewayent.set_defaults(dest="enterprise_get_gateway")
+
 
     # Update/insert system properties in VCO
     parser_sysprop_set = subparsers.add_parser("sysprop_set")
