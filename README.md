@@ -67,7 +67,7 @@ All tests where performed on a Linux and/or MacOS operation systems. There is no
     </tr>
     <tr>
         <td><b>3.3.0-GA-20190724</b></td>
-        <td>0.1.5</td>
+        <td>0.1.6</td>
     </tr>
     <tr>
         <td>3.2.2-GA-20190606</td>
