@@ -24,43 +24,6 @@ created                                 2019-04-19T15:48:50.000Z                
 
 It uses argparse and it is functional hooks. Each functional hook, is a mini method to accomplish something. 
 
-## Installation
-
-### Compatibility
-
-The matrix below gives one the vcoclient version on which VCO release it was tested against.
-
-For sanity reasons, only the current VCO release will be used for testing and hence vcoclient (and the workflow_examples) will be updated/maintained accordingly. The current VCO release will be market as **bold**.
-
-**CAUTION:** Using a different version of vcoclient against different VCO release, might cause unwanted results and is not recommended.
-
-All tests where performed on a Linux and/or MacOS operation systems. There is no reason why it should not work with Windows but you have been warned. 
-
-<table>
-    <tr>
-        <td>VCO release</td>
-        <td>Tested with vcoclient version</td>
-    </tr>
-    <tr>
-        <td>**3.3.0-GA-20190724*</td>
-        <td>0.1.5</td>
-    </tr>
-    <tr>
-        <td>3.2.2-GA-20190606</td>
-        <td>0.1.4 and earlier</td>
-    </tr>
-</table>
-
-### Instructions
-
-To install the latest version use:
-
-``pip3 install vcoclient``
-
-To install a particular version, e.g. version 0.1.4 use:
-
-``pip3 install vcoclient==0.1.4``
-
 ## Status
 
 <table>
@@ -83,6 +46,44 @@ To install a particular version, e.g. version 0.1.4 use:
         <td><img src='https://img.shields.io/pypi/pyversions/vcoclient.svg'></td>
     </tr>
 </table>
+
+
+## Installation
+
+### Compatibility
+
+The matrix below gives one the vcoclient version on which VCO release it was tested against.
+
+For sanity reasons, only the current VCO release will be used for testing and hence vcoclient (and the workflow_examples) will be updated/maintained accordingly. The current VCO release will be market as **bold**.
+
+**CAUTION:** Using a different version of vcoclient against different VCO release, might cause unwanted results and is not recommended.
+
+All tests where performed on a Linux and/or MacOS operation systems. There is no reason why it should not work with Windows but you have been warned. 
+
+<table>
+    <tr>
+        <td>VCO release</td>
+        <td>Tested with vcoclient version</td>
+    </tr>
+    <tr>
+        <td><b>3.3.0-GA-20190724</b></td>
+        <td>0.1.5</td>
+    </tr>
+    <tr>
+        <td>3.2.2-GA-20190606</td>
+        <td>0.1.4 and earlier</td>
+    </tr>
+</table>
+
+### Instructions
+
+To install the latest version use:
+
+``pip3 install vcoclient``
+
+To install a particular version, e.g. version 0.1.4 use:
+
+``pip3 install vcoclient==0.1.4``
 
 ## Useage
 
