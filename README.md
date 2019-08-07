@@ -254,19 +254,18 @@ It is best practice to use it after done using different methods with vcoclient.
 [iddoc@homeserver:/scripts] vcoclient.py --vco=192.168.2.55 logout
 ```
 
-
-### Get Edges - Method
+### Get edges - Method
 
 To get a list of all or filtered VeloCloud Edges (VCEs) from VCO. One can ``--search`` per value, get only one ``--name`` VCE and ``--filters``only given keys. Each of the methods (``--name``, ``--filters`` or ``--search``), one can use "|" to find for several values (e.g. to find several VCEs with names Branch1 or Branch2, use ``--name="Branch1|Branch2"). This gives one a powerful option to compare and evaluate several VCEs against each other and use those returned values for another workflow. 
 
-``--id`` can be used to specify VCEs from specific customer in VCO.
+``--enterpriseid`` can be used to find all specify VCEs from specific customer in VCO. For msp based users this is a must to use. 
 
 **Please note:** ``--name``, ``--search`` and ``--filters``are all doing a loose search rather then an exact match, meaning you will get more values then maybe requested but you do not need to be very specific for your search. Maybe as a to-do, give different options in the future. 
 
 ```sh
 
 usage: vcoclient.py edges_get [-h] [--name NAME] [--filters FILTERS]
-                              [--search SEARCH] [--id ID] [--rows_name]
+                              [--search SEARCH] [--enterpriseid ID] [--rows_name]
 
 optional arguments:
   -h, --help         show this help message and exit
@@ -275,7 +274,7 @@ optional arguments:
                      Default all values are returned
   --search SEARCH    Search any data from properties of Edges, e.g. search for
                      USB interfaces
-  --id ID            Returns the Edges of only that given enterprise. Default
+  --enterpriseid ID            Returns the Edges of only that given enterprise. Default
                      all Edges of all enterprises at operator view or all
                      Edges of an enterprise at customer view are returned.
   --rows_name        Returns only the row names from the output result.
@@ -474,8 +473,169 @@ description                                                      NaN            
 domain                                                           NaN                                   NaN  ...                                   NaN                                   NaN
 ....
 ```
+### Get edges behind gateway
 
-### Set System Properties - Method
+This method will give one the ability to get all/some gateways behind a given customer
+
+```sh
+[iddoc@homeserver:/scripts] vcoclient.py enterprise_get_gateway --help
+usage: vcoclient.py enterprise_get_gateway [-h] --enterpriseid ENTERPRISEID
+                                           [--name NAME]
+                                           [--filters FILTERS]
+                                           [--search SEARCH] [--rows_name]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --name NAME           Search for a given column name
+  --enterpriseid ENTERPRISEID
+                        Get gateways associated to an enterprise
+  --filters FILTERS     Returns only given filters out of the returned value.
+                        Default all values are returned
+  --search SEARCH       Search any data from properties of customers, e.g.
+                        search for particular edge
+  --rows_name           Returns only the row names from the output result.
+
+```
+
+#### Example
+
+Get the gateways associated to that enterprise:
+
+```sh
+[iddoc@homeserver:/scripts] vcoclient.py enterprise_get_gateway --enterpriseid=26
+
+vcg115-xxx1    vcg101-xxx2   vcg133-xxx1   vcg104-xxx2
+address  xxx.193.30.11  xxx.193.31.36  xxx.193.29.52  xxx.193.28.72
+```
+
+### Get gateways behind customer
+
+This method will give one the ability to get all/some edges behind a given gateway
+
+```sh
+[iddoc@homeserver:/scripts] vcoclient.py gateway_get_edges --help
+usage: vcoclient.py gateway_get_edges [-h] --gatewayid GATEWAYID [--name NAME]
+                                      [--filters FILTERS] [--search SEARCH]
+                                      [--rows_name]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --name NAME           Search for a given column name
+  --gatewayid GATEWAYID
+                        Get edges associated to a gateway
+  --filters FILTERS     Returns only given filters out of the returned value.
+                        Default all values are returned
+  --search SEARCH       Search any data from properties of customers, e.g.
+                        search for particular edge
+  --rows_name           Returns only the row names from the output result.
+```
+
+#### Example
+
+Get all edges behind gateway (output hidden): 
+
+```sh
+[iddoc@homeserver:/scripts] vcoclient.py --gatewayid 5
+
+                                          Alpharetta xxxxxxx                   Dallas xxxx
+activationKey                            3WCR-xxxx-xxxx-xxxx                   3MQZ-xxx-xxxx-xxx
+activationKeyExpires                2018-10-20T13:26:00.000Z              2018-04-06T02:11:14.000Z
+activationState                         REACTIVATION_PENDING                             ACTIVATED
+activationTime                      2018-05-25T00:02:08.000Z              2018-03-07T18:50:44.000Z
+alertsEnabled                                              1                                     1
+buildNumber                     R321-20181018-GA-27175-28009                      R320-20180409-GA
+city                                                 Phoenix                                Dallas
+country                                                   US                                    US
+created                             2018-04-04T20:51:55.000Z              2018-03-07T02:11:14.000Z
+
+```
+
+### Get link metric of a given edge
+
+One can get the link metric of a particular VCE for a given time.
+
+```sh
+[iddoc@homeserver:/scripts] vcoclient.py edge_get_lm --help
+usage: vcoclient.py edge_get_lm [-h] [--filters FILTERS] [--search SEARCH]
+                                --edgeid EDGEID [--enterpriseid ENTERPRISEID]
+                                --starttime STARTTIME [--endtime ENDTIME]
+                                [--rows_name]
+
+Collect link statistics for a VCE between a given period.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --filters FILTERS     Returns only given filters out of the returned value.
+                        Default all values are returned
+  --search SEARCH       Search for the metric value
+  --edgeid EDGEID       Get information for that specific Edge. Edgeid can be
+                        found under edges_get method under id.
+  --enterpriseid ENTERPRISEID
+                        Get information for that specific Edge in that
+                        specific customer. EnterpriseId can be either found
+                        from *_customers_get method under id or edges_get
+                        method under enterpriseId.
+  --starttime STARTTIME
+                        The start time from when one wants to get the data.
+                        Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM.
+  --endtime ENDTIME     The end time from when one wants to get the data.
+                        Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM. End time
+                        is default to time now.
+  --rows_name           Returns only the row names from the output result.
+
+```
+
+#### Example
+
+Get the metric of all the links of a given edge from a given customer in the past until now:
+
+```sh
+[iddoc@homeserver:/scripts] vcoclient.py edge_get_lm --edgeid=1712 --enterpriseid=214 --starttime="2019-07-21"
+
+                                                             GE3                                   GE4
+bestJitterMsRx                                            0.0708                                 0.429
+bestJitterMsTx                                            0.0007                                0.0677
+bestLatencyMsRx                                           5.9113                                5.6578
+bestLatencyMsTx                                           8.2916                                 9.771
+bestLossPctRx                                            1.00436                              0.009067
+bestLossPctTx                                           0.992402                              0.010039
+bpsOfBestPathRx                                         10000000                               5000000
+bpsOfBestPathTx                                         10000000                               5000000
+bytesRx                                               6756806035                             942812687
+bytesTx                                               5831454620                            1543851068
+controlBytesRx                                        3161065177                             798578528
+controlBytesTx                                        4174190874                            1477374932
+controlPacketsRx                                        28229649                               7410590
+controlPacketsTx                                        28763213                               9038440
+....
+link_networkType                                        ETHERNET                              ETHERNET
+link_operatorAlertsEnabled                                     1                                     1
+link_serviceState                                     IN_SERVICE                            IN_SERVICE
+link_state                                                STABLE                                STABLE
+link_vpnState                                             STABLE                                STABLE
+p1BytesRx                                                9879820                              19802676
+p1BytesTx                                               98164614                              40242590
+p1PacketsRx                                                53984                                111780
+p1PacketsTx                                               144023                                 86695
+p2BytesRx                                             1342611884                             123590823
+p2BytesTx                                              988377584                              25282998
+p2PacketsRx                                              1806817                                510994
+p2PacketsTx                                              2058099                                 57703
+p3BytesRx                                             2243249154                                840660
+p3BytesTx                                              570721548                                950548
+p3PacketsRx                                             12891737                                  2738
+p3PacketsTx                                              3279254                                  3994
+packetsRx                                               42982187                               8036102
+packetsTx                                               34244589                               9186832
+scoreRx                                                  4.33582                               4.39847
+scoreTx                                                  4.33613                               4.39684
+signalStrength                                                 0                                     0
+totalBytes                                           12588260655                            2486663755
+totalPackets                                            77226776                              17222934
+```
+
+
+### Set system properties
 
 System properties of VCO can be changed/added. Only applicable at "operator" mode but needed for on-premiss installation of VCO.
 
