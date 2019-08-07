@@ -2,8 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5] - 2019-08
+### Added:
+- gateway_get_edges is a new method which gets the edges behind a given gateway
+- enterprise_get_gateway is a new method which gets the gateways behind edges 
+
+### Changed:
+- edges_get method parameter ``id`` changed to ``enterpriseid`` to make sure we are consistent
+- get_edges_lm method will convert user time to epoch to be more consistant
+- Updated README to reflect new methods and changes
+
 ## [0.1.4] - 2019-07
-## Change:
+### Changed:
 - Fixing bug in setup.py
 
 ## [0.1.3] - 2019-07
