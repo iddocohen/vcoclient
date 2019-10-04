@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.8] - 2019-10
+## Added:
+- added edges_get_agg_lm to get aggregated link statistics
+- added stats option to almost every method. Didn't documented it yet but a very cool feature!
+
+## Changed:
+- architecture change on how arguments are getting generated
+- now login and logout are new methods in the class
+
 ## [0.1.7] - 2019-08
 ### Added:
 - gateway_get_edges is a new method which gets the edges behind a given gateway

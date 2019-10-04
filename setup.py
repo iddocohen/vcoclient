@@ -12,7 +12,7 @@ with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
 
 setup(
      name='vcoclient',  
-     version='0.1.7',
+     version='0.1.8',
      scripts=['vcoclient.py'] ,
      author="Iddo Cohen",
      author_email="iddocohen@gmail.com",

@@ -1,4 +1,4 @@
-# vcoclient.py (version 0.1.7) 
+# vcoclient.py (version 0.1.8) 
 
 A simple VeloCloud Orchestrator (VCO) Python client
 
@@ -66,7 +66,11 @@ All tests where performed on a Linux and/or MacOS operation systems. There is no
         <td>Tested with vcoclient version</td>
     </tr>
     <tr>
-        <td><b>3.3.0-GA-20190724</b></td>
+        <td><b>3.3.1-GA-20190819</b></td>
+        <td>0.1.8</td>
+    </tr>
+    <tr>
+        <td>3.3.0-GA-20190724</td>
         <td>0.1.7</td>
     </tr>
     <tr>
@@ -242,7 +246,7 @@ or use VCO_USER and/or VCO_PASS environment variables to pass no login informati
 [iddoc@homeserver:/scripts]
 ```
 
-### Logout - Method
+### Logout
 
 The logout method logsout from VCO itself and deletes the session cookie stored under ``/tmp/<hostname>.txt``.
 
@@ -254,7 +258,7 @@ It is best practice to use it after done using different methods with vcoclient.
 [iddoc@homeserver:/scripts] vcoclient.py --vco=192.168.2.55 logout
 ```
 
-### Get edges - Method
+### Get edges
 
 To get a list of all or filtered VeloCloud Edges (VCEs) from VCO. One can ``--search`` per value, get only one ``--name`` VCE and ``--filters``only given keys. Each of the methods (``--name``, ``--filters`` or ``--search``), one can use "|" to find for several values (e.g. to find several VCEs with names Branch1 or Branch2, use ``--name="Branch1|Branch2"). This gives one a powerful option to compare and evaluate several VCEs against each other and use those returned values for another workflow. 
 
@@ -634,6 +638,64 @@ totalBytes                                           12588260655                
 totalPackets                                            77226776                              17222934
 ```
 
+### Get link metric for the whole enterprise
+
+One can get the link metrics of all VCEs of a given enterprise.
+
+```sh
+[iddoc@homeserver:/scripts] vcoclient.py edge_get_agg_lm --help
+usage: vcoclient.py edges_get_agg_lm [-h] [--enterpriseid ENTERPRISEID]
+                                     --starttime STARTTIME [--endtime ENDTIME]
+                                     [--name NAME] [--filters FILTERS]
+                                     [--search SEARCH] [--rows_name] [--stats]
+
+Collect aggregated link statistics for several VCEs between a given period
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --enterpriseid ENTERPRISEID
+                        Get information for that specific Edge in that
+                        specific customer. EnterpriseId can be either found
+                        from *_customers_get method under id or edges_get
+                        method under enterpriseId.
+  --starttime STARTTIME
+                        The start time from when one wants to get the data.
+                        Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM.
+  --endtime ENDTIME     The end time from when one wants to get the data.
+                        Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM.
+  --name NAME           Search column which contains the given name
+  --filters FILTERS     Returns only given filters out of the returned value.
+                        Default all values are returned
+  --search SEARCH       Search any value within the return, e.g. search for
+                        USB interfaces
+  --rows_name           Returns only the row names from the output result.
+  --stats               Returns the statistics of the datastructure
+```
+
+#### Example
+
+Get the metric of all the links of a given edge from a given customer in the past until now:
+
+````sh
+[iddoc@homeserver:/scripts] vcoclient.py edges_get_agg_lm --enterpriseid=214 --starttime="2019-10-04"`
+                                                          GE3                                   GE4  ...                                   GE4                                   GE4
+bestJitterMsRx                                              0                                     0  ...                                     0                                     0
+bestJitterMsTx                                              0                                     0  ...                                     1                                     0
+bestLatencyMsRx                                            28                                    30  ...                                    14                                    13
+bestLatencyMsTx                                            36                                    37  ...                                     9                                     5
+bestLossPctRx                                               0                                     0  ...                                     0                                     0
+bestLossPctTx                                               0                                     0  ...                                     0                                     0
+bpsOfBestPathRx                                     200000000                             200000000  ...                              30114000                              98408000
+bpsOfBestPathTx                                     200000000                             200000000  ...                               1392000                              10185000
+bytesRx                                                813833                                144354  ...                                560482                                922079
+bytesTx                                                901650                                171777  ...                                736663                                874260
+controlBytesRx                                         683561                                144354  ...                                399858                                435730
+controlBytesTx                                         820243                                171777  ...                                736663                                512154
+controlPacketsRx                                         5906                                  2398  ...                                  5543                                  4928
+controlPacketsTx                                         5747                                  2399  ...                                  5865                                  4752
+linkId                                                   3163                                  3166  ...                                 37009                                 38690
+...
+```
 
 ### Set system properties
 
@@ -659,13 +721,6 @@ Enable google API for VCO:
 ```sh
 [iddoc@homeserver:/scripts] vcoclient.py sysprop_set --name=service.client.googleMapsApi.enable --value=true
 ```
-
-## Future improvements
-
-* Finishing the TODOs in client
-* Add more useful functions:
-    * Partner gateway provisioning method
-    * Edge provisioning method
 
 ## Contributing
 

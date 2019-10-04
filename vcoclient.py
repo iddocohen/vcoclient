@@ -30,41 +30,6 @@ from pandas.io.json import json_normalize
 # Specific imports
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-config_api_url = {
-    "login"                  :    "",
-    "logout"                 :    "",
-    "edges_get"              :    "enterprise/getEnterpriseEdges",
-    "edge_get_lm"            :    "metrics/getEdgeLinkMetrics",
-    "enterprise_get_gateway" :    "enterprise/getEnterpriseAddresses",
-    "gateway_get_edges"      :    "gateway/getGatewayEdgeAssignments",
-    "msp_customers_get"      :    "enterpriseProxy/getEnterpriseProxyEnterprises",
-    "operator_customers_get" :    "network/getNetworkEnterprises",
-    "sysprop_set"            :    "systemProperty/insertOrUpdateSystemProperty",
-    "default"                :    ""
-}
-config_api_param   = {
-    "edges_get"              :    '{ "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": %(enterpriseid)i }',    
-    "edge_get_lm"            :    '{ "edgeId": %(edgeid)i, "enterpriseId": %(enterpriseid)i, "interval": { "end": %(endtime)i, "start": %(starttime)i}, "metrics": ["bytesRx", "bytesTx", "totalBytes", "totalPackets", "p1BytesRx", "p1BytesTx", "p1PacketsRx", "p1PacketsTx", "p2BytesRx", "p2BytesTx", "p2PacketsRx", "p2PacketsTx", "p3BytesRx", "p3BytesTx", "p3PacketsRx", "p3PacketsTx", "packetsRx", "packetsTx", "controlBytesRx", "controlBytesTx", "controlPacketsRx", "controlPacketsTx", "bestBwKbpsRx", "bestBwKbpsTx", "bestJitterMsRx", "bestJitterMsTx", "bestLatencyMsRx", "bestLatencyMsTx", "bestLossPctRx", "bestLossPctTx", "bpsOfBestPathRx", "bpsOfBestPathTx", "signalStrength", "scoreTx", "scoreRx"]}',
-    "enterprise_get_gateway" :    '{ "enterpriseId": %(enterpriseid)i }',
-    "gateway_get_edges"      :    '{ "gatewayId": %(gatewayid)i }',
-    "operator_customers_get" :    '{ "with":["edges"], "networkId": 1}',
-    "msp_customers_get"      :    '{ "with":["edges"]}',
-    "sysprop_set"            :    '{ "name": "%(name)s", "value": "%(value)s"}',
-    "default"                :    None
-}
-config_api_call  = {
-    "login"                  :    "authenticate", 
-    "logout"                 :    "authenticate",
-    "default"                :    "call_api"
-}
-config_out_mani  = {
-    "login"                  :    None,
-    "logout"                 :    None,
-    "sysprop_set"            :    None,
-    "default"                :    "format_by_name",
-}
-
-
 
 # TODO: Might want to have some logic to increase rows/columns
 #pd.set_option('display.max_columns', 100)
@@ -107,6 +72,12 @@ class VcoRequestManager(object):
             re.sub('http(s)?://', '', hostname)
         proto = "https://"
         return proto + hostname
+
+    def login(self, **kwargs):
+        self.authenticate(**kwargs)
+
+    def logout(self, **kwargs):
+        self.authenticate(logout=True, **kwargs)
 
     def authenticate(self, username="", password="", logout=False, is_operator=True, *args, **kwargs):
         """
@@ -162,7 +133,6 @@ class VcoRequestManager(object):
                     "params": params }
 
         #print(payload)
-
         if method in ("liveMode/readLiveData", "liveMode/requestLiveActions", "liveMode/clientExitLiveMode"):
             url = self._livepull_url
         else:
@@ -172,6 +142,7 @@ class VcoRequestManager(object):
                                data=json.dumps(payload), verify=self._verify_ssl)
 
         response_dict = r.json()
+        #print(response_dict)
         if "error" in response_dict:
             raise ApiException(response_dict["error"]["message"])
         return response_dict["result"]
@@ -222,17 +193,16 @@ class VcoApiExecuteError(Exception):
 
 class VcoApiExecute(object):
     """
-    Executing dynmaic RestAPI calls based on the config_ dicts defined. 
+    Executing dynmaic RestAPI calls based on the config dicts defined. 
     """
     def __init__(self, **args):
         if "dest" not in args:
             raise VcoApiExecuteError("Dest not defined in argparse object")        
-
         name        = args["dest"]
-        self.url    = config_api_url.get(name, "")
-        self.param  = self.__replace_placeholder(config_api_param.get(name, config_api_param["default"]), **args)
-        self.call   = config_api_call.get(name, config_api_call["default"])
-        self.out    = config_out_mani.get(name, config_out_mani["default"])
+        self.url    = config[name]["url"]
+        self.param  = self.__replace_placeholder(config[name]["param"], **args)
+        self.call   = config[name]["call"]
+        self.out    = config[name]["mani"]
         self.client = VcoRequestManager(args["hostname"])
         self.p      = None
 
@@ -240,7 +210,7 @@ class VcoApiExecute(object):
 
     def __internal_call(self, **args):
         """
-        Uses VcoRequestManager object and associated config_ dicts to execute the APIs.
+        Uses VcoRequestManager object and associated config dicts to execute the APIs.
         """
         try:
             if self.call:
@@ -254,34 +224,38 @@ class VcoApiExecute(object):
                 raise VcoApiExecuteError(str(e))
             raise e
 
-    def format_by_name(self, j, name=None, search=None, filters=None, output=None, rows=None, **args):
+    def format_by_name(self, j, name=None, search=None, filters=None, output=None, rows=None, stats=None, **args):
         """
         Converting JSON into Panda dataframe for filtering/searching given keys/values from that datastructure. 
         """
         df  = pd.DataFrame.from_dict(json_normalize(j, sep='_'), orient='columns')
         df.rename(index=df.name.to_dict(), inplace=True)
 
+        found = 1 
         if search:
-
-          found = {}
-
-          for k,v in self.__search_value(j, search):
-            i, *_ = k.split("_")
-            n = j[int(i)]["name"]
-            k = k[len(i)+1:]
-            found.setdefault(n,{})
-            found[n].setdefault(k,{})
-            found[n]["name"] = n 
-            found[n][k] = v
+            expand = {}
+            for k,v in self.__search_value(j, search):
+                i, *_ = k.split("_")
+                n = j[int(i)]["name"]
+                k = k[len(i)+1:]
+                expand.setdefault(n,{})
+                expand[n].setdefault(k,{})
+                expand[n]["name"] = n 
+                expand[n][k] = v
 
           # TODO: Not sure what is more efficient, ...(found).T or ...from_dict(found, orient='index'). Fact is, from_dict does not preserve order, hence using .T for now.
-          df = pd.DataFrame(found).T
+            found = bool(expand)
+            df = pd.DataFrame(expand).T
           
-        if name:
-          df = df[df['name'].str.contains(name)]
+        if name and found:
+            df = df[df['name'].str.contains(name)]
 
-        if filters:
-          df = df[df.columns[df.columns.str.contains(filters)]]
+        if filters and found:
+            df = df[df.columns[df.columns.str.contains(filters)]]
+
+        if stats and found:
+            #df = df.describe(include='all')
+            df = df.describe()
 
         if "name" in df:
             df.drop("name", axis=1, inplace=True)
@@ -294,9 +268,9 @@ class VcoApiExecute(object):
             df = list(df.index)
 
         if output == "json":
-          df = df.to_json()
+            df = df.to_json()
         elif output == "csv":
-          df = df.to_csv()
+            df = df.to_csv()
         
         return df
 
@@ -350,16 +324,145 @@ def valid_datetime_type(arg_datetime_str):
 
     try:
         return unix_time_millis(datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d %H:%M"))
-        #return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d %H:%M").isoformat()
-        #return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d %H:%M")
     except ValueError:
         try:
             return unix_time_millis(datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d"))
-            #return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d").isoformat()
-            #return datetime.datetime.strptime(arg_datetime_str, "%Y-%m-%d")
         except ValueError:
             msg = "Given Datetime ({0}) not valid! Expected format, 'YYYY-MM-DD HH:mm' or 'YYYY-MM-DD'!".format(arg_datetime_str)
             raise argparse.ArgumentTypeError(msg)  
+
+
+config = {
+    "default"               : {
+
+                                "url"        :  "",
+                                "param"      : None,
+                                "mani"       : "format_by_name",
+                                "call"       : "call_api",
+                                "argparse"   : {
+                                    "name"     : {"action":"store",  "type":str, "help":"Search column which contains the given name"},
+                                    "filters"  : {"action":"store",  "type":str, "help":"Returns only given filters out of the returned value. Default all values are returned"},
+                                    "search"   : {"action":"store",  "type":str, "help":"Search any value within the return, e.g. search for USB interfaces"},
+                                    "rows_name": {"action":"store_true", "dest":"rows", "default":False, "help":"Returns only the row names from the output result."},
+                                    "stats"    : {"action":"store_true", "default":False, "help":"Returns the statistics of the datastructure"}
+                                 }
+                              },
+    "login"                 : {
+                                    "call"       : "login",
+                                    "mani"       : "", 
+                                    "description": "Login method into VCO. First method that should be called before execuiting any other. Will store authentication cookie.",
+                                    "argparse"   : { 
+                                        "username":    {"action":"store",      "type":str,            "default":os.getenv('VCO_USER', None), "help":"Username for authentication"},
+                                        "password":    {"action":Password,     "type":str,"nargs":'?',"default":os.getenv('VCO_PASS', ""),   "help":"Password for authentication"},
+                                        "no-operator": {"action":"store_false","dest":"is_operator",  "default":True,                        "help":"Login not as operator user"},
+                                        "name": None,
+                                        "filters": None,
+                                        "rows_name": None,
+                                        "stats" : None,
+                                        "search": None 
+                                    }
+                             },
+    "logout"                 : { 
+                                    "call"       : "logout",
+                                    "mani"       : "", 
+                                    "description": "Logout from VCO. Last method that should be called, for cleaning up. Will delete try to delete the authentication cookie.",
+                                    "argparse"   : {
+                                        "name": None,
+                                        "filters": None,
+                                        "rows_name": None,
+                                        "stats" : None,
+                                        "search": None 
+                                    }
+                              },
+    "edges_get"              : {
+                                    "url"        : "enterprise/getEnterpriseEdges",
+                                    "param"      : '{ "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get basic information for all/some VCEs",
+                                    "argparse"   : { 
+                                        "enterpriseid": {"action":"store", "type":int, "default":1, "help":"Returns the Edges of only that given enterprise. Default all Edges of all enterprises at operator view or all Edges of an enterprise at customer view are returned." }
+                                    }
+                             },
+    "edges_get_lm"           : {
+                                    "url"        : "metrics/getEdgeLinkMetrics",
+                                    "param"      : '{ "edgeId": %(edgeid)i, "enterpriseId": %(enterpriseid)i, "interval": { "end": %(endtime)i, "start": %(starttime)i}, "metrics": ["bytesRx", "bytesTx", "totalBytes", "totalPackets", "p1BytesRx", "p1BytesTx", "p1PacketsRx", "p1PacketsTx", "p2BytesRx", "p2BytesTx", "p2PacketsRx", "p2PacketsTx", "p3BytesRx", "p3BytesTx", "p3PacketsRx", "p3PacketsTx", "packetsRx", "packetsTx", "controlBytesRx", "controlBytesTx", "controlPacketsRx", "controlPacketsTx", "bestBwKbpsRx", "bestBwKbpsTx", "bestJitterMsRx", "bestJitterMsTx", "bestLatencyMsRx", "bestLatencyMsTx", "bestLossPctRx", "bestLossPctTx", "bpsOfBestPathRx", "bpsOfBestPathTx", "signalStrength", "scoreTx", "scoreRx"]}',
+                                    "description": "Collect link statistics for a VCE between a given period",
+                                    "argparse"   : { 
+                                        "enterpriseid": {"action":"store", "type":int, "default":0, "help":"Get information for that specific Edge in that specific customer. EnterpriseId can be either found from *_customers_get method under id or edges_get method under enterpriseId." },
+                                        "edgeid"      : {"action":"store", "type":int, "required":True, "help":"Get information for that specific Edge. Edgeid can be found under edges_get method under id."},
+                                        "starttime"   : {"action":"store", "type":valid_datetime_type, "required":True,"help":"The start time from when one wants to get the data. Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM."},
+                                        "endtime"     : {"action":"store", "type":valid_datetime_type, "default":valid_datetime_type(str(datetime.date.today())),"help":"The end time from when one wants to get the data. Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM."}
+                                    }
+                             },
+    "edges_get_agg_lm"           : {
+                                    "url"        : "monitoring/getAggregateEdgeLinkMetrics",
+                                    "param"      : '{ "enterpriseId": %(enterpriseid)i, "interval": { "end": %(endtime)i, "start": %(starttime)i}, "metrics": ["bytesRx", "bytesTx", "totalBytes", "totalPackets", "p1BytesRx", "p1BytesTx", "p1PacketsRx", "p1PacketsTx", "p2BytesRx", "p2BytesTx", "p2PacketsRx", "p2PacketsTx", "p3BytesRx", "p3BytesTx", "p3PacketsRx", "p3PacketsTx", "packetsRx", "packetsTx", "controlBytesRx", "controlBytesTx", "controlPacketsRx", "controlPacketsTx", "bestBwKbpsRx", "bestBwKbpsTx", "bestJitterMsRx", "bestJitterMsTx", "bestLatencyMsRx", "bestLatencyMsTx", "bestLossPctRx", "bestLossPctTx", "bpsOfBestPathRx", "bpsOfBestPathTx", "signalStrength", "scoreTx", "scoreRx"]}',
+                                    "description": "Collect aggregated link statistics for several VCEs between a given period",
+                                    "argparse"   : { 
+                                        "enterpriseid": {"action":"store", "type":int, "required": True, "default":0, "help":"Get information for that specific Edge in that specific customer. EnterpriseId can be either found from *_customers_get method under id or edges_get method under enterpriseId." },
+                                        "starttime"   : {"action":"store", "type":valid_datetime_type, "required":True,"help":"The start time from when one wants to get the data. Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM."},
+                                        "endtime"     : {"action":"store", "type":valid_datetime_type, "default":valid_datetime_type(str(datetime.date.today())),"help":"The end time from when one wants to get the data. Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM."}
+                                    }
+                             },
+    "operator_customers_get" : {
+                                    "url"        : "network/getNetworkEnterprises",
+                                    "param"      : '{ "with":["edges"], "networkId": 1}',
+                                    "description": "Get all customers as an operator user",
+                                     "argparse"   : {}
+                             },
+    "msp_customers_get"      : {
+                                    "url"        : "enterpriseProxy/getEnterpriseProxyEnterprises",
+                                    "param"      : '{ "with":["edges"] }',
+                                    "description": "Get all customers as an msp user",
+                                    "argparse"   : {}
+                             },
+    "gateway_get_edges"      : {
+                                    "url"        : "gateway/getGatewayEdgeAssignments",
+                                    "param"      : '{ "gatewayId": %(gatewayid)i }',
+                                    "description": "Get edges behind given gateway",
+                                    "argparse"   : { 
+                                        "gatewayid"   : {"action":"store", "type":int, "required":True, "help":"Provide gatewayid to get the edges" }
+                                    }
+                             },
+    "enterprise_get_gateway" : {
+                                    "url"        : "enterprise/getEnterpriseAddresses",
+                                    "param"      : '{ "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get gateways associated to given etnerprise",
+                                    "argparse"   : { 
+                                        "enterpriseid": {"action":"store", "type":int, "required":True, "help":"Provide enterpriseid to get the gateways" }
+                                    }
+                             },
+    #"enterprise_get_edge_status": {
+                                    #"url"        : "/monitoring/getEnterpriseEdgeStatus",
+                                    #"param"       : '{ "enterpriseId": %(enterpriseid)i, "edgeids":[13220], "time": %(time)i, "more": True, "limit": 100, "sort": "cpuPct", "metrics": ["tunnelCount", "memoryPct", "flowCount", "cpuPct", "handoffQueueDrops" ]}',
+                                    #"param"       : '{ "enterpriseId": %(enterpriseid)i, "interval": {"start": %(time)i},"sort": "tunnelCount", "metrics": ["tunnelCount", "memoryPct", "flowCount", "cpuPct", "handoffQueueDrops" ]}',
+                                    #"param"       : '{ "enterpriseId": %(enterpriseid)i, "edgeids":[13220], "interval": {"start": %(time)i}, "more": True, "limit": 100, "sort": "cpuPct", "metrics": ["tunnelCount", "memoryPct", "flowCount", "cpuPct", "handoffQueueDrops" ]}',
+     #                               "param"       : '{ "enterpriseId": %(enterpriseid)i, "edgeIds": [5994], "limit": 10000, "sort": "tunnelCount"}',
+     #                               "mani"       : "",
+     #                               "description": "Get status of all enterprise edges",
+     #                               "argparse"   : { 
+     #                                   "enterpriseid": {"action":"store", "type":int, "default":0, "help":"EnterpriseId can be either found from *_customers_get method under id or edges_get method under enterpriseId." },
+     #                                   "time"      : {"action":"store", "type":valid_datetime_type, "default":valid_datetime_type(str(datetime.date.today())),"help":"The end time from when one wants to get the data. Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM."},
+     #                                   "filters"   : None,
+     #                                   "rows_name" : None,
+     #                                   "stats"     : None,
+     #                                   "search"    : None
+     #                               }
+     #                       },
+    "sysprop_set"            : {
+                                    "url"        : "systemProperty/insertOrUpdateSystemProperty",
+                                    "param"      : '{ "name": "%(name)s", "value": "%(value)s"}',
+                                    "description": "Set new/edit system property values",
+                                    "argparse": {
+                                        "name"      : {"action":"store", "type":str, "required":True, "help":"Name of the new/edit system property"},
+                                        "value"     : {"action":"store", "type":str, "required":True, "help":"New value of the system properties"},
+                                        "filters"   : None,
+                                        "rows_name" : None,
+                                        "stats"     : None,
+                                        "search"    : None
+                            }
+
+    }
+}
 
 if __name__ == "__main__":
     """
@@ -374,155 +477,25 @@ if __name__ == "__main__":
     
     subparsers = parser.add_subparsers()
 
-    # Login function
-    parser_login = subparsers.add_parser("login")
-    parser_login.add_argument("--username", action="store", type=str, dest="username", default=os.getenv('VCO_USER', None),
-                              help="Username for Authentication")
-
-    parser_login.add_argument("--password", action=Password, type=str, dest="password", nargs='?', default=os.getenv('VCO_PASS', ""),
-                              help="Password for Authentication")
-    
-    parser_login.add_argument("--no-operator", action="store_false", dest="is_operator", default=True,
-                              help="Per default we login as operator to VCO. If not, use this flag")
-
-    parser_login.set_defaults(dest="login")
-    
-    # Logout function
-    parser_logout = subparsers.add_parser("logout")
-    parser_logout.set_defaults(dest="logout")
-    parser_logout.set_defaults(logout=True)
-
-
-    # Get all Edges
-    parser_getedges = subparsers.add_parser("edges_get", description="Get basic information for all/some VCEs.")
-    
-    parser_getedges.add_argument("--name", action="store", type=str, dest="name", 
-                              help="Search Edge/Edges containing the given name")
-    
-    parser_getedges.add_argument("--filters", action="store", type=str, dest="filters",
-                              help="Returns only given filters out of the returned value. Default all values are returned")
-
-    parser_getedges.add_argument("--search", action="store", type=str, dest="search", 
-                              help="Search any data from properties of Edges, e.g. search for USB interfaces")
-    
-    parser_getedges.add_argument("--enterpriseid", action="store", type=int, dest="enterpriseid", default=1,
-                              help="Returns the Edges of only that given enterprise. Default all Edges of all enterprises at operator view or all Edges of an enterprise at customer view are returned.")
-
-    parser_getedges.add_argument("--rows_name", action="store_true", dest="rows", default=False,
-                              help="Returns only the row names from the output result.")
-
-    parser_getedges.set_defaults(dest="edges_get")
-
-    # Get link metric per Edge
-    parser_getedgelm = subparsers.add_parser("edge_get_lm", description="Collect link statistics for a VCE between a given period.")
-    
-    parser_getedgelm.add_argument("--filters", action="store", type=str, dest="filters",
-                              help="Returns only given filters out of the returned value. Default all values are returned")
-
-    parser_getedgelm.add_argument("--search", action="store", type=str, dest="search", 
-                              help="Search for the metric value")
-    
-    parser_getedgelm.add_argument("--edgeid", action="store", type=int, dest="edgeid", required=True,
-                              help="Get information for that specific Edge. Edgeid can be found under edges_get method under id.")
-
-    parser_getedgelm.add_argument("--enterpriseid", action="store", type=int, dest="enterpriseid", default=0,
-                              help="Get information for that specific Edge in that specific customer. EnterpriseId can be either found from *_customers_get method under id or edges_get method under enterpriseId.")
-
-    parser_getedgelm.add_argument("--starttime", action="store", type=valid_datetime_type, dest="starttime", required=True,
-                              help="The start time from when one wants to get the data. Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM.")
-    
-    parser_getedgelm.add_argument("--endtime", action="store", type=valid_datetime_type, dest="endtime", default=valid_datetime_type(str(datetime.date.today())),
-                              help="The end time from when one wants to get the data. Format is in YYYY-MM-DD or YYYY-MM-DD HH:MM. End time is default to time now.")
-
-    parser_getedgelm.add_argument("--rows_name", action="store_true", dest="rows", default=False,
-                              help="Returns only the row names from the output result.")
-
-    parser_getedgelm.set_defaults(dest="edge_get_lm")
+    dic = {}
+    for method in config:
+        if method == "default":
+            continue
+        dic[method] = subparsers.add_parser(method, description=config[method].get("description",""))
+        for key, value in config["default"].items():
+            config[method].setdefault(key, value) 
+        for key, value in config["default"]["argparse"].items():
+            config[method]["argparse"].setdefault(key, value) 
+        for key in config[method]["argparse"]:
+            if not config[method]["argparse"][key]:
+                continue
+            args = config[method]["argparse"][key]
+            if "dest" not in args:
+                   args["dest"] = key
+            dic[method].add_argument("--{}".format(key), **args)
+        dic[method].set_defaults(dest=method)
 
 
-    # Get all Customers as operator
-    parser_getcustomers_operator = subparsers.add_parser("operator_customers_get")
-    
-    parser_getcustomers_operator.add_argument("--name", action="store", type=str, dest="name", 
-                              help="Search Enterprise/Enterprises containing the given name")
-    
-    parser_getcustomers_operator.add_argument("--filters", action="store", type=str, dest="filters",
-                              help="Returns only given filters out of the returned value. Default all values are returned")
-    
-    parser_getcustomers_operator.add_argument("--search", action="store", type=str, dest="search", 
-                              help="Search any data from properties of customers, e.g. search for particular edge")
-
-    parser_getcustomers_operator.add_argument("--rows_name", action="store_true", dest="rows", default=False,
-                              help="Returns only the row names from the output result.")
-
-    parser_getcustomers_operator.set_defaults(dest="operator_customers_get")
-
-    # Get all Customers as msp
-    parser_getcustomers_msp = subparsers.add_parser("msp_customers_get")
-    
-    parser_getcustomers_msp.add_argument("--name", action="store", type=str, dest="name", 
-                              help="Search Enterprise/Enterprises containing the given name")
-    
-    parser_getcustomers_msp.add_argument("--filters", action="store", type=str, dest="filters",
-                              help="Returns only given filters out of the returned value. Default all values are returned")
-    
-    parser_getcustomers_msp.add_argument("--search", action="store", type=str, dest="search", 
-                              help="Search any data from properties of customers, e.g. search for particular edge")
-
-    parser_getcustomers_msp.add_argument("--rows_name", action="store_true", dest="rows", default=False,
-                              help="Returns only the row names from the output result.")
-
-    parser_getcustomers_msp.set_defaults(dest="msp_customers_get")
-
-
-    # Get edges behind a gateway
-    parser_getgatewayedges = subparsers.add_parser("gateway_get_edges")
-    parser_getgatewayedges.add_argument("--gatewayid", action="store", type=int, dest="gatewayid", required=True,
-                              help="Get edges associated to a gateway")
-
-    parser_getgatewayedges.add_argument("--name", action="store", type=str, dest="name", 
-                              help="Search for a given column name")
-    parser_getgatewayedges.add_argument("--filters", action="store", type=str, dest="filters",
-                              help="Returns only given filters out of the returned value. Default all values are returned")
-    
-    parser_getgatewayedges.add_argument("--search", action="store", type=str, dest="search", 
-                              help="Search any data from properties of customers, e.g. search for particular edge")
-
-    parser_getgatewayedges.add_argument("--rows_name", action="store_true", dest="rows", default=False,
-                              help="Returns only the row names from the output result.")
-
-    parser_getgatewayedges.set_defaults(dest="gateway_get_edges")
-
-    # Get gateways behind enterprise
-    parser_getgatewayent = subparsers.add_parser("enterprise_get_gateway")
-    parser_getgatewayent.add_argument("--enterpriseid", action="store", type=int, dest="enterpriseid", required=True,
-                              help="Get gateways associated to an enterprise")
-
-    parser_getgatewayent.add_argument("--name", action="store", type=str, dest="name", 
-                              help="Search for a given column name")
-    parser_getgatewayent.add_argument("--filters", action="store", type=str, dest="filters",
-                              help="Returns only given filters out of the returned value. Default all values are returned")
-    
-    parser_getgatewayent.add_argument("--search", action="store", type=str, dest="search", 
-                              help="Search any data from properties of customers, e.g. search for particular edge")
-
-    parser_getgatewayent.add_argument("--rows_name", action="store_true", dest="rows", default=False,
-                              help="Returns only the row names from the output result.")
-
-    parser_getgatewayent.set_defaults(dest="enterprise_get_gateway")
-
-
-    # Update/insert system properties in VCO
-    parser_sysprop_set = subparsers.add_parser("sysprop_set")
-    
-    parser_sysprop_set.add_argument("--name", action="store", type=str, dest="name", required=True, 
-                              help="Name of the new/edit system property")
-
-    parser_sysprop_set.add_argument("--value", action="store", type=str, dest="value", required=True, 
-                              help="New value of the system property")
-    
-    parser_sysprop_set.set_defaults(dest="sysprop_set")
-    
     args = parser.parse_args()
 
     if "dest" not in args:
@@ -531,4 +504,3 @@ if __name__ == "__main__":
         obj = VcoApiExecute(**vars(args))
         if obj.p is not None:
             print(obj.p)
-
