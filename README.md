@@ -677,7 +677,7 @@ optional arguments:
 Get the metric of all the links of a given edge from a given customer in the past until now:
 
 ````sh
-[iddoc@homeserver:/scripts] vcoclient.py edges_get_agg_lm --enterpriseid=214 --starttime="2019-10-04"`
+[iddoc@homeserver:/scripts] vcoclient.py edges_get_agg_lm --enterpriseid=214 --starttime="2019-10-04"
                                                           GE3                                   GE4  ...                                   GE4                                   GE4
 bestJitterMsRx                                              0                                     0  ...                                     0                                     0
 bestJitterMsTx                                              0                                     0  ...                                     1                                     0
