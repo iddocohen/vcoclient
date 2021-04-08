@@ -230,7 +230,9 @@ class VcoApiExecute(object):
         Converting JSON into Panda dataframe for filtering/searching given keys/values from that datastructure. 
         """
         df  = pd.DataFrame.from_dict(json_normalize(j, sep='_'), orient='columns')
-        df.rename(index=df.name.to_dict(), inplace=True)
+        # some return value does not have "name" field
+        if hasattr(df, "name"):
+            df.rename(index=df.name.to_dict(), inplace=True)
 
         found = 1 
         if search:
@@ -424,7 +426,7 @@ config = {
                                         "gatewayid"   : {"action":"store", "type":int, "required":True, "help":"Provide gatewayid to get the edges" }
                                     }
                              },
-    "enterprise_get"              : {
+    "enterprise_get"         : {
                                     "url"        : "enterprise/getEnterprise",
                                     "param"      : '{ "with":[], "enterpriseId": %(enterpriseid)i }',
                                     "description": "Get data for the specified enterprise",
@@ -435,11 +437,21 @@ config = {
     "enterprise_get_gateway" : {
                                     "url"        : "enterprise/getEnterpriseAddresses",
                                     "param"      : '{ "enterpriseId": %(enterpriseid)i }',
-                                    "description": "Get gateways associated to given etnerprise",
+                                    "description": "Get gateways associated to given enterprise",
                                     "argparse"   : { 
                                         "enterpriseid": {"action":"store", "type":int, "required":True, "help":"Provide enterpriseid to get the gateways" }
                                     }
                              },
+    "enterprise_get_users"   : {
+                                    "url"        : "enterprise/getEnterpriseUsers",
+                                    "param"      : '{ "enterpriseId": %(enterpriseid)i }',
+                                    "description" : "Get users associated to given enterprise",
+                                    "argparse": {
+                                       "enterpriseid": {"action": "store", "type": int, "required": True,
+                                                        "help": "Provide enterpriseid to get the gateways"}
+                                    }
+                              },
+
     #"enterprise_get_edge_status": {
                                     #"url"        : "/monitoring/getEnterpriseEdgeStatus",
                                     #"param"       : '{ "enterpriseId": %(enterpriseid)i, "edgeids":[13220], "time": %(time)i, "more": True, "limit": 100, "sort": "cpuPct", "metrics": ["tunnelCount", "memoryPct", "flowCount", "cpuPct", "handoffQueueDrops" ]}',
