@@ -25,7 +25,7 @@ import datetime
 
 # Specific Libs
 import pandas as pd
-from pandas.io.json import json_normalize
+from pandas import json_normalize
 
 # Specific imports
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
