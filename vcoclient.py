@@ -451,6 +451,15 @@ config = {
                                                         "help": "Provide enterpriseid to get the gateways"}
                                     }
                               },
+    "enterprise_get_net_segs": {
+        "url": "enterprise/getEnterpriseNetworkSegments",
+        "param": '{ "enterpriseId": %(enterpriseid)i }',
+        "description": "Get all network segments for given enterprise",
+        "argparse": {
+            "enterpriseid": {"action": "store", "type": int, "required": True,
+                             "help": "Provide enterpriseid to get the gateways"}
+        }
+    },
 
     #"enterprise_get_edge_status": {
                                     #"url"        : "/monitoring/getEnterpriseEdgeStatus",
