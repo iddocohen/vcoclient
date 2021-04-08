@@ -423,6 +423,14 @@ config = {
                                         "gatewayid"   : {"action":"store", "type":int, "required":True, "help":"Provide gatewayid to get the edges" }
                                     }
                              },
+    "enterprise_get"              : {
+                                    "url"        : "enterprise/getEnterprise",
+                                    "param"      : '{ "with":[], "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get data for the specified enterprise",
+                                    "argparse"   : {
+                                        "enterpriseid": {"action":"store", "type":int, "default":1, "help":"Returns the data of only that given enterprise." }
+                                    }
+                             },
     "enterprise_get_gateway" : {
                                     "url"        : "enterprise/getEnterpriseAddresses",
                                     "param"      : '{ "enterpriseId": %(enterpriseid)i }',
