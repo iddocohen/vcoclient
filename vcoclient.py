@@ -478,6 +478,15 @@ config = {
                              "help": "Provide enterpriseid to get the configurations"}
         }
     },
+    "enterprise_get_gw_handoff": {
+        "url": "enterprise/getEnterpriseGatewayHandoff",
+        "param": '{ "enterpriseId": %(enterpriseid)i }',
+        "description": "Get the gateway handoff configuration for given enterprise",
+        "argparse": {
+            "enterpriseid": {"action": "store", "type": int, "required": True,
+                             "help": "Provide enterpriseid to get the gateway handoff"}
+        }
+    },
 
     #"enterprise_get_edge_status": {
                                     #"url"        : "/monitoring/getEnterpriseEdgeStatus",
