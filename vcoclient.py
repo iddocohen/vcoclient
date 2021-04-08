@@ -25,6 +25,7 @@ import datetime
 
 # Specific Libs
 import pandas as pd
+import numpy as np
 from pandas import json_normalize
 
 # Specific imports
@@ -261,7 +262,7 @@ class VcoApiExecute(object):
             df.drop("name", axis=1, inplace=True)
 
         df = df.T
-        df.fillna(value=pd.np.nan, inplace=True)
+        df.fillna(value=np.nan, inplace=True)
         df.dropna(axis='columns', how='all', inplace=True)
 
         if rows:
