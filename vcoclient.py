@@ -487,6 +487,17 @@ config = {
                              "help": "Provide enterpriseid to get the gateway handoff"}
         }
     },
+    "edge_get_config_stack": {
+        "url": "edge/getEdgeConfigurationStack",
+        "param": '{ "edgeId": %(edgeid)i, "enterpriseId": %(enterpriseid)i }',
+        "description": "Get the configuration of the specified edge",
+        "argparse": {
+            "enterpriseid": {"action": "store", "type": int, "required": True,
+                             "help": "Provide enterpriseid to get the edge config"},
+            "edgeid": {"action": "store", "type": int, "required": True,
+                             "help": "Provide edgeid to get the edge config"}
+        }
+    },
 
     #"enterprise_get_edge_status": {
                                     #"url"        : "/monitoring/getEnterpriseEdgeStatus",
