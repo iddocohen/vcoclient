@@ -412,6 +412,14 @@ config = {
                                     "description": "Get all customers as an operator user",
                                      "argparse"   : {}
                              },
+    "gatewaypools_get"       : {
+                                    "url": "network/getNetworkGatewayPools",
+                                    "param": '{ "with":["gateways"], "networkId": %(networkid)i}',
+                                    "description": "Gets all gateway pools associated with the specified network",
+                                    "argparse": {
+                                        "networkid": {"action":"store", "type":int, "default":1, "help":"Proide networkid to get gateway pools"}
+                                    }
+                             },
     "msp_customers_get"      : {
                                     "url"        : "enterpriseProxy/getEnterpriseProxyEnterprises",
                                     "param"      : '{ "with":["edges"] }',
