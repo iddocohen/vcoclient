@@ -469,6 +469,15 @@ config = {
                              "help": "Provide enterpriseid to get the services"}
         }
     },
+    "enterprise_get_configurations": {
+        "url": "enterprise/getEnterpriseConfigurations",
+        "param": '{ "enterpriseId": %(enterpriseid)i }',
+        "description": "Get all configuration profiles for given enterprise",
+        "argparse": {
+            "enterpriseid": {"action": "store", "type": int, "required": True,
+                             "help": "Provide enterpriseid to get the configurations"}
+        }
+    },
 
     #"enterprise_get_edge_status": {
                                     #"url"        : "/monitoring/getEnterpriseEdgeStatus",
