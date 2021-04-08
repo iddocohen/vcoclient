@@ -457,7 +457,16 @@ config = {
         "description": "Get all network segments for given enterprise",
         "argparse": {
             "enterpriseid": {"action": "store", "type": int, "required": True,
-                             "help": "Provide enterpriseid to get the gateways"}
+                             "help": "Provide enterpriseid to get the network segments"}
+        }
+    },
+    "enterprise_get_services": {
+        "url": "enterprise/getEnterpriseServices",
+        "param": '{ "enterpriseId": %(enterpriseid)i }',
+        "description": "Get all services for given enterprise",
+        "argparse": {
+            "enterpriseid": {"action": "store", "type": int, "required": True,
+                             "help": "Provide enterpriseid to get the services"}
         }
     },
 
