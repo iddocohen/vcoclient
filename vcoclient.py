@@ -230,7 +230,9 @@ class VcoApiExecute(object):
         Converting JSON into Panda dataframe for filtering/searching given keys/values from that datastructure. 
         """
         df  = pd.DataFrame.from_dict(json_normalize(j, sep='_'), orient='columns')
-        df.rename(index=df.name.to_dict(), inplace=True)
+        # some return value does not have "name" field
+        if hasattr(df, "name"):
+            df.rename(index=df.name.to_dict(), inplace=True)
 
         found = 1 
         if search:
@@ -375,6 +377,15 @@ config = {
                                         "search": None 
                                     }
                               },
+    "user_roles_get"          : {
+                                    "url"        : "role/getUserTypeRoles",
+                                    "param"      : '{"userType": "%(usertype)s"}',
+                                    "description": "Gets all roles defined",
+                                    "argparse"   : {
+                                        "usertype": {"action":"store", "type":str, "choices":["ENTERPRISE", "OPERATOR"],
+                                                     "default":"ENTERPRISE", "help":"Get roles per user type"}
+                                    }
+                              },
     "edges_get"              : {
                                     "url"        : "enterprise/getEnterpriseEdges",
                                     "param"      : '{ "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": %(enterpriseid)i }',
@@ -410,6 +421,23 @@ config = {
                                     "description": "Get all customers as an operator user",
                                      "argparse"   : {}
                              },
+    "gatewaypools_get"       : {
+                                    "url": "network/getNetworkGatewayPools",
+                                    "param": '{ "with":["gateways"], "networkId": %(networkid)i}',
+                                    "description": "Gets all gateway pools associated with the specified network",
+                                    "argparse": {
+                                        "networkid": {"action":"store", "type":int, "default":1, "help":"Provide networkid to get gateway pools"}
+                                    }
+                             },
+    "network_config_get"     : {
+                                    "url": "network/getNetworkConfigurations",
+                                    "param": '{ "with":["modules"], "networkId": %(networkid)i}',
+                                    "description": "Gets all operator configuration profiles with the specified network",
+                                    "argparse": {
+                                        "networkid": {"action": "store", "type": int, "default": 1, "help": "Provide networkid to get operator configurations"}
+                                    }
+                             },
+
     "msp_customers_get"      : {
                                     "url"        : "enterpriseProxy/getEnterpriseProxyEnterprises",
                                     "param"      : '{ "with":["edges"] }',
@@ -424,14 +452,79 @@ config = {
                                         "gatewayid"   : {"action":"store", "type":int, "required":True, "help":"Provide gatewayid to get the edges" }
                                     }
                              },
+    "enterprise_get"         : {
+                                    "url"        : "enterprise/getEnterprise",
+                                    "param"      : '{ "with":[], "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get data for the specified enterprise",
+                                    "argparse"   : {
+                                        "enterpriseid": {"action":"store", "type":int, "default":1, "help":"Returns the data of only that given enterprise." }
+                                    }
+                             },
     "enterprise_get_gateway" : {
                                     "url"        : "enterprise/getEnterpriseAddresses",
                                     "param"      : '{ "enterpriseId": %(enterpriseid)i }',
-                                    "description": "Get gateways associated to given etnerprise",
+                                    "description": "Get gateways associated to given enterprise",
                                     "argparse"   : { 
                                         "enterpriseid": {"action":"store", "type":int, "required":True, "help":"Provide enterpriseid to get the gateways" }
                                     }
                              },
+    "enterprise_get_users"   : {
+                                    "url"        : "enterprise/getEnterpriseUsers",
+                                    "param"      : '{ "enterpriseId": %(enterpriseid)i }',
+                                    "description" : "Get users associated to given enterprise",
+                                    "argparse": {
+                                       "enterpriseid": {"action": "store", "type": int, "required": True,
+                                                        "help": "Provide enterpriseid to get the gateways"}
+                                    }
+                              },
+    "enterprise_get_net_segs": {
+                                    "url": "enterprise/getEnterpriseNetworkSegments",
+                                    "param": '{ "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get all network segments for given enterprise",
+                                    "argparse": {
+                                        "enterpriseid": {"action": "store", "type": int, "required": True,
+                                                        "help": "Provide enterpriseid to get the network segments"}
+                                        }
+                                },
+    "enterprise_get_services": {
+                                    "url": "enterprise/getEnterpriseServices",
+                                    "param": '{ "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get all services for given enterprise",
+                                    "argparse": {
+                                        "enterpriseid": {"action": "store", "type": int, "required": True,
+                                        "help": "Provide enterpriseid to get the services"}
+                                    }
+                                },
+    "enterprise_get_configurations": {
+                                    "url": "enterprise/getEnterpriseConfigurations",
+                                    "param": '{ "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get all configuration profiles for given enterprise",
+                                    "argparse": {
+                                        "enterpriseid": {"action": "store", "type": int, "required": True,
+                                                        "help": "Provide enterpriseid to get the configurations"}
+                                    }
+                                },
+    "enterprise_get_gw_handoff": {
+                                    "url": "enterprise/getEnterpriseGatewayHandoff",
+                                    "param": '{ "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get the gateway handoff configuration for given enterprise",
+                                    "argparse": {
+                                        "enterpriseid": {"action": "store", "type": int, "required": True,
+                                                    "help": "Provide enterpriseid to get the gateway handoff"}
+                                    }
+                                },
+    "edge_get_config_stack"     : {
+                                    "url": "edge/getEdgeConfigurationStack",
+                                    "param": '{ "edgeId": %(edgeid)i, "enterpriseId": %(enterpriseid)i }',
+                                     "description": "Get the configuration of the specified edge",
+                                     "argparse": {
+                                        "enterpriseid": {"action": "store", "type": int, "required": True,
+                                                        "help": "Provide enterpriseid to get the edge config"},
+                                        "edgeid": {"action": "store", "type": int, "required": True,
+                                                        "help": "Provide edgeid to get the edge config"}
+                                    }
+                                },
+
     #"enterprise_get_edge_status": {
                                     #"url"        : "/monitoring/getEnterpriseEdgeStatus",
                                     #"param"       : '{ "enterpriseId": %(enterpriseid)i, "edgeids":[13220], "time": %(time)i, "more": True, "limit": 100, "sort": "cpuPct", "metrics": ["tunnelCount", "memoryPct", "flowCount", "cpuPct", "handoffQueueDrops" ]}',
