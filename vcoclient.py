@@ -478,52 +478,52 @@ config = {
                                     }
                               },
     "enterprise_get_net_segs": {
-        "url": "enterprise/getEnterpriseNetworkSegments",
-        "param": '{ "enterpriseId": %(enterpriseid)i }',
-        "description": "Get all network segments for given enterprise",
-        "argparse": {
-            "enterpriseid": {"action": "store", "type": int, "required": True,
-                             "help": "Provide enterpriseid to get the network segments"}
-        }
-    },
+                                    "url": "enterprise/getEnterpriseNetworkSegments",
+                                    "param": '{ "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get all network segments for given enterprise",
+                                    "argparse": {
+                                        "enterpriseid": {"action": "store", "type": int, "required": True,
+                                                        "help": "Provide enterpriseid to get the network segments"}
+                                        }
+                                },
     "enterprise_get_services": {
-        "url": "enterprise/getEnterpriseServices",
-        "param": '{ "enterpriseId": %(enterpriseid)i }',
-        "description": "Get all services for given enterprise",
-        "argparse": {
-            "enterpriseid": {"action": "store", "type": int, "required": True,
-                             "help": "Provide enterpriseid to get the services"}
-        }
-    },
+                                    "url": "enterprise/getEnterpriseServices",
+                                    "param": '{ "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get all services for given enterprise",
+                                    "argparse": {
+                                        "enterpriseid": {"action": "store", "type": int, "required": True,
+                                        "help": "Provide enterpriseid to get the services"}
+                                    }
+                                },
     "enterprise_get_configurations": {
-        "url": "enterprise/getEnterpriseConfigurations",
-        "param": '{ "enterpriseId": %(enterpriseid)i }',
-        "description": "Get all configuration profiles for given enterprise",
-        "argparse": {
-            "enterpriseid": {"action": "store", "type": int, "required": True,
-                             "help": "Provide enterpriseid to get the configurations"}
-        }
-    },
+                                    "url": "enterprise/getEnterpriseConfigurations",
+                                    "param": '{ "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get all configuration profiles for given enterprise",
+                                    "argparse": {
+                                        "enterpriseid": {"action": "store", "type": int, "required": True,
+                                                        "help": "Provide enterpriseid to get the configurations"}
+                                    }
+                                },
     "enterprise_get_gw_handoff": {
-        "url": "enterprise/getEnterpriseGatewayHandoff",
-        "param": '{ "enterpriseId": %(enterpriseid)i }',
-        "description": "Get the gateway handoff configuration for given enterprise",
-        "argparse": {
-            "enterpriseid": {"action": "store", "type": int, "required": True,
-                             "help": "Provide enterpriseid to get the gateway handoff"}
-        }
-    },
-    "edge_get_config_stack": {
-        "url": "edge/getEdgeConfigurationStack",
-        "param": '{ "edgeId": %(edgeid)i, "enterpriseId": %(enterpriseid)i }',
-        "description": "Get the configuration of the specified edge",
-        "argparse": {
-            "enterpriseid": {"action": "store", "type": int, "required": True,
-                             "help": "Provide enterpriseid to get the edge config"},
-            "edgeid": {"action": "store", "type": int, "required": True,
-                             "help": "Provide edgeid to get the edge config"}
-        }
-    },
+                                    "url": "enterprise/getEnterpriseGatewayHandoff",
+                                    "param": '{ "enterpriseId": %(enterpriseid)i }',
+                                    "description": "Get the gateway handoff configuration for given enterprise",
+                                    "argparse": {
+                                        "enterpriseid": {"action": "store", "type": int, "required": True,
+                                                    "help": "Provide enterpriseid to get the gateway handoff"}
+                                    }
+                                },
+    "edge_get_config_stack"     : {
+                                    "url": "edge/getEdgeConfigurationStack",
+                                    "param": '{ "edgeId": %(edgeid)i, "enterpriseId": %(enterpriseid)i }',
+                                     "description": "Get the configuration of the specified edge",
+                                     "argparse": {
+                                        "enterpriseid": {"action": "store", "type": int, "required": True,
+                                                        "help": "Provide enterpriseid to get the edge config"},
+                                        "edgeid": {"action": "store", "type": int, "required": True,
+                                                        "help": "Provide edgeid to get the edge config"}
+                                    }
+                                },
 
     #"enterprise_get_edge_status": {
                                     #"url"        : "/monitoring/getEnterpriseEdgeStatus",
