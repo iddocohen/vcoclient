@@ -426,9 +426,18 @@ config = {
                                     "param": '{ "with":["gateways"], "networkId": %(networkid)i}',
                                     "description": "Gets all gateway pools associated with the specified network",
                                     "argparse": {
-                                        "networkid": {"action":"store", "type":int, "default":1, "help":"Proide networkid to get gateway pools"}
+                                        "networkid": {"action":"store", "type":int, "default":1, "help":"Provide networkid to get gateway pools"}
                                     }
                              },
+    "network_config_get"     : {
+                                    "url": "network/getNetworkConfigurations",
+                                    "param": '{ "with":["modules"], "networkId": %(networkid)i}',
+                                    "description": "Gets all operator configuration profiles with the specified network",
+                                    "argparse": {
+                                        "networkid": {"action": "store", "type": int, "default": 1, "help": "Provide networkid to get operator configurations"}
+                                    }
+                             },
+
     "msp_customers_get"      : {
                                     "url"        : "enterpriseProxy/getEnterpriseProxyEnterprises",
                                     "param"      : '{ "with":["edges"] }',
