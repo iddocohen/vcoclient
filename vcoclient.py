@@ -377,6 +377,15 @@ config = {
                                         "search": None 
                                     }
                               },
+    "user_roles_get"          : {
+                                    "url"        : "role/getUserTypeRoles",
+                                    "param"      : '{"userType": "%(usertype)s"}',
+                                    "description": "Gets all roles defined",
+                                    "argparse"   : {
+                                        "usertype": {"action":"store", "type":str, "choices":["ENTERPRISE", "OPERATOR"],
+                                                     "default":"ENTERPRISE", "help":"Get roles per user type"}
+                                    }
+                              },
     "edges_get"              : {
                                     "url"        : "enterprise/getEnterpriseEdges",
                                     "param"      : '{ "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": %(enterpriseid)i }',
