@@ -1,17 +1,7 @@
 #!/bin/bash
 
 # Uncomment this line to export right VCO_HOST, VCO_USER and VCO_PASS
-#export VCO_HOST=""
-#export VCO_USER=""
-#export VCO_PASS=""
-
-# Trying to login to current VCO
-RET=$(vcoclient.py login --no-operator)
-
-if [ $? -eq 1 ]; then
-    echo $RET
-    exit 1
-fi
+#export VCO_TOKEN=""
 
 # Trying to get any random customer for MSP from VCO
 ID=$(vcoclient.py --output=json msp_customers_get | jq '.[].id' | shuf | head -n 1 )
