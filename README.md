@@ -54,8 +54,6 @@ It uses argparse and it is functional hooks. Each functional hook, is a mini met
         <td><img src='https://img.shields.io/pypi/v/vcoclient.svg'></td>
     </tr>
     <tr>
-        <td>Travis CI</td>
-        <td><img src='https://travis-ci.org/iddocohen/vcoclient.svg?branch=master'></td>
         <td>Downloads</td>
         <td><img src='https://img.shields.io/pypi/dm/vcoclient.svg'></td>
     </tr>
