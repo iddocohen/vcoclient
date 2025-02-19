@@ -1,8 +1,28 @@
-# vcoclient.py (version 0.1.8) 
+# vcoclient.py (version 0.1.9) 
 
 A simple VeloCloud Orchestrator (VCO) Python client
 
 The idea is to embrace the Linux methodology and to have one VCO client that can be used within a complex workflow under Linux.
+
+### Simple usage
+
+```sh
+[iddoc@homeserver:/scripts] pip3 install vcoclient
+[iddoc@homeserver:/scripts] export VCO_TOKEN='....'
+[iddoc@homeserver:/scripts] vcoclient.py --vco=192.168.2.55 edges_get
+
+                                                         Branch1                                   Branch2                                   Branch3                                   Branch4
+activationKey                                HS7S-QKPA-ZZCC-PG74                       LHH3-8B4R-7XVJ-6J3V                       JTWH-EHNW-7LUG-YQ9T                       YZ8U-CKTY-8MTL-FP4R
+activationKeyExpires                    2019-05-28T11:53:33.000Z                  2019-05-19T16:58:53.000Z                  2019-06-01T10:32:39.000Z                  2019-06-01T16:10:54.000Z
+activationState                                        ACTIVATED                                 ACTIVATED                                 ACTIVATED                                 ACTIVATED
+activationTime                          2019-04-28T11:55:38.000Z                  2019-04-19T17:17:51.000Z                  2019-05-02T10:55:10.000Z                  2019-05-02T19:18:20.000Z
+alertsEnabled                                                  1                                         1                                         1                                         1
+buildNumber                                     R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA                          R322-20190212-GA
+created                                 2019-04-19T15:48:50.000Z                  2019-04-19T16:58:53.000Z                  2019-05-02T10:32:39.000Z                  2019-05-02T16:10:54.000Z
+...                                     ...                                       ...                                       ...                                       ...
+```
+
+### Or authentication based:
 
 ```sh
 [iddoc@homeserver:/scripts] vcoclient.py --vco=192.168.2.55 login --username=super@domain.com --password
@@ -66,6 +86,10 @@ All tests where performed on a Linux and/or MacOS operation systems. There is no
         <td>Tested with vcoclient version</td>
     </tr>
     <tr>
+        <td><b>,4.x,5.x,6.x</b></td>
+        <td>0.1.9</td>
+    </tr>
+    <tr>
         <td><b>3.3.1-GA-20190819</b></td>
         <td>0.1.8</td>
     </tr>
@@ -109,6 +133,12 @@ To influence program behaviour and avoiding using ``--``options, one can use glo
         <td>None</td>
     </tr>
     <tr>
+        <td>VCO_TOKEN (working only with 0.1.9+)</td>
+        <td>export VCO_TOKEN="yourtoken here"</td>
+        <td></td>
+        <td>None</td>
+    </tr>
+    <tr>
         <td>VCO_USER</td>
         <td>export VCO_USER="my_username@domain.net"</td>
         <td>vcoclient.py login --username="my_username@domain.net"</td>
@@ -132,6 +162,7 @@ To influence program behaviour and avoiding using ``--``options, one can use glo
         <td>None (yet)</td>
         <td>False</td>
     </tr>
+
 </table> 
 
 ### Global Program Options

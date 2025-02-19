@@ -25,7 +25,7 @@ import datetime
 
 # Specific Libs
 import pandas as pd
-from pandas.io.json import json_normalize
+import numpy as np
 
 # Specific imports
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -34,6 +34,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 # TODO: Might want to have some logic to increase rows/columns
 #pd.set_option('display.max_columns', 100)
 #pd.set_option('display.max_rows', 100)
+pd.set_option('display.max_rows', None)
 
 class Password(argparse.Action):
     def __call__(self, parser, namespace, values, option_string):
@@ -48,13 +49,16 @@ class ApiException(Exception):
 class VcoRequestManager(object):
 
     #TODO: Give path outside here for the user to alter
-    def __init__(self, hostname, verify_ssl=os.getenv('VCO_VERIFY_SSL', False), path=os.getenv('VCO_COOKIE_PATH', "/tmp/")):
+    def __init__(self, hostname, verify_ssl=os.getenv('VCO_VERIFY_SSL', False), path=os.getenv('VCO_COOKIE_PATH', "/tmp/"), token=os.getenv('VCO_TOKEN',"")):
         """
         Init the Class
         """
         if not hostname:
             raise ApiException("Hostname not defined")
         self._session = requests.Session()
+        self._token = token
+        if len(self._token) > 0 :
+            self._session.headers.update({"Authorization": f"Token {self._token}"})
         self._verify_ssl = verify_ssl
         if self._verify_ssl == False:
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -83,6 +87,9 @@ class VcoRequestManager(object):
         """
         Authenticate to API - on success, a cookie is stored in the session and file
         """
+        if len(self._token) > 0:
+            return;
+
         if not logout:
           path = "/login/operatorLogin" if is_operator else "/login/enterpriseLogin"
           data = { "username": username, "password": password }
@@ -117,9 +124,10 @@ class VcoRequestManager(object):
         Build and submit a request
         Returns method result as a Python dictionary
         """
-        if "velocloud.session" not in self._session.cookies: 
-            if not self._load_cookie():
-                raise ApiException("Cannot load session cookie") 
+        if len(self._token) == 0:
+            if "velocloud.session" not in self._session.cookies: 
+                if not self._load_cookie():
+                    raise ApiException("Cannot load session cookie") 
 
         if not method:
             raise ApiException("No Api Method defined")        
@@ -224,11 +232,11 @@ class VcoApiExecute(object):
                 raise VcoApiExecuteError(str(e))
             raise e
 
-    def format_by_name(self, j, name=None, search=None, filters=None, output=None, rows=None, stats=None, **args):
+    def format_by_name(self, j, name=None, search=None, filters=None, output=None, rows=None, stats=None, transpose=None, **args):
         """
         Converting JSON into Panda dataframe for filtering/searching given keys/values from that datastructure. 
         """
-        df  = pd.DataFrame.from_dict(json_normalize(j, sep='_'), orient='columns')
+        df  = pd.DataFrame.from_dict(pd.json_normalize(j, sep='_'), orient='columns')
         df.rename(index=df.name.to_dict(), inplace=True)
 
         found = 1 
@@ -261,8 +269,11 @@ class VcoApiExecute(object):
             df.drop("name", axis=1, inplace=True)
 
         df = df.T
-        df.fillna(value=pd.np.nan, inplace=True)
+        df.fillna(value=np.nan, inplace=True)
         df.dropna(axis='columns', how='all', inplace=True)
+
+        if not transpose:
+            df = df.T
 
         if rows:
             df = list(df.index)
@@ -374,10 +385,19 @@ config = {
                                         "search": None 
                                     }
                               },
-    "edges_get"              : {
+    "edges_get_simple"              : {
                                     "url"        : "enterprise/getEnterpriseEdges",
-                                    "param"      : '{ "with":["certificates","configuration","links","recentLinks","site","vnfs","licences","cloudServices","cloudServiceSiteStatus"], "enterpriseId": %(enterpriseid)i }',
+                                    "param"      : '{ "with":["site","ha","recentLinks"], "enterpriseId":%(enterpriseid)i }', 
                                     "description": "Get basic information for all/some VCEs",
+                                    "argparse"   : { 
+                                        "enterpriseid": {"action":"store", "type":int, "default":1, "help":"Returns the Edges of only that given enterprise. Default all Edges of all enterprises at operator view or all Edges of an enterprise at customer view are returned." }
+                                    }
+                             },
+   
+    "edges_get_detail"              : {
+                                    "url"        : "enterprise/getEnterpriseEdges",
+                                    "param"      : '{ "with":["site","ha","configuration","recentLinks","cloudServices","nvsFromEdge","vnfs","certificateSummary","secureDeviceSecrets"], "enterpriseId":%(enterpriseid)i }', 
+                                    "description": "Get all informations for all/some VCEs",
                                     "argparse"   : { 
                                         "enterpriseid": {"action":"store", "type":int, "default":1, "help":"Returns the Edges of only that given enterprise. Default all Edges of all enterprises at operator view or all Edges of an enterprise at customer view are returned." }
                                     }
@@ -473,7 +493,8 @@ if __name__ == "__main__":
                         help="Hostname/IP of VCO")
     parser.add_argument("--output", action="store", type=str, dest="output", default="pandas", choices=["pandas", "json", "csv"],
                         help="Pandas tables are used as default output method but one can also use 'json' or 'csv'")
-
+    parser.add_argument("--no-transpose", action="store_false", dest="transpose", default=True,
+                        help="Data is represented via name as columns, and values as rows. If you want it the other way, that is possible via this setting it.")
     
     subparsers = parser.add_subparsers()
 
